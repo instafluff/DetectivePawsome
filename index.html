@@ -3,23 +3,19 @@
     <title>Detective Pawsome!</title>
     <script src="web/pinkfluffyunicorn.min.js"></script>
     <script src="web/eventemitter.js"></script>
-    <!-- <script src="gamepad.js"></script> -->
     <script src="web/keyboard.js"></script>
     <script src="web/words.js"></script>
     <style>
-      body { margin: 0; background-color: coral;}
+      body { margin: 0; }
     </style>
   </head>
   <body>
     <div id="unicorn-display"></div>
-    <!-- <h1 id="answer"></h1>
-    <h5 id="definition"></h5>
-    <h1 id="word"></h1> -->
     <script>
       const params = new URLSearchParams(location.search);
       window.WebFontConfig = {
           google: {
-              families: ['Luckiest Guy', 'Geo'],
+              families: ['Share Tech Mono'],
           },
           active() {
               CreateGame();
@@ -40,7 +36,11 @@
       /* eslint-enabled */
 
       var bg2;
-      var answer, definition, word;
+      const autoTextTime = 60;
+      var displayTextCooldown = 0;
+      var displayTextBuffer = "", textLines = 0;
+      var textDisplay;
+      var textPrompt, answer;
 
       function Init() {
         Unicorn.Load( "bg1", "web/assets/bcg1.png" );
@@ -48,26 +48,30 @@
 
         Unicorn.AddOverlay( "bg1", "bg1", 0, 0 );
         bg2 = Unicorn.AddOverlay( "bg2", "bg2", 0, 0 );
-        console.log( bg2 );
+        // Animate BG
         setInterval( () => {
           bg2.visible = !bg2.visible;
         }, 100 );
-        answer = Unicorn.AddText( "answer", "", 190, 110 );
-        definition = Unicorn.AddText( "definition", "definition", 0, 0 );
-        word = Unicorn.AddText( "word", "|", 190, 150 );
+
+        textDisplay = Unicorn.AddText( "textDisplay", "", 190, 100, {
+          fontFamily: "Share Tech Mono",
+        } );
+        answer = Unicorn.AddText( "answer", "", 190, 200, {
+          fontFamily: "Share Tech Mono",
+        } );
+        textPrompt = Unicorn.AddText( "textPrompt", "|", 190, 100, {
+          fontFamily: "Share Tech Mono",
+        } );
 
         newWord( gameDifficulty );
         setInterval( () => {
-          if( word.text.endsWith( "|" ) ) {
-            word.text = word.text.substring( 0, word.text.length - 2 );
+          if( textPrompt.text.endsWith( "|" ) ) {
+            textPrompt.text = textPrompt.text.substring( 0, textPrompt.text.length - 1 );
           }
           else {
-            word.text += " |";
+            textPrompt.text += "|";
           }
         }, 350 );
-        // gamepad.on( 'connected', console.log );
-        // gamepad.on( 'disconnected', console.log );
-        // gamepad.on( 'update', console.log );
         keyboard.on( 'keydown', ( key ) => {
           switch( key ) {
           case "Backspace":
@@ -91,18 +95,41 @@
             }
             break;
           }
-          word.text = typedword.split( "" ).join( " " );
+          textPrompt.text = typedword.split( "" ).join( "" );
           // console.log( typedword );
         } );
-        // keyboard.on( 'keyup', console.log );
-        // keyboard.on( 'update', console.log );
+
+        setTimeout( () => {
+          addDisplayText( "Hello\nDetective Pawsome." );
+          setTimeout( () => {
+            // clearDisplayText();
+            addDisplayText( "\nPlease Log In." );
+          }, 5000 );
+        }, 3000 );
+      }
+
+      function clearDisplayText() {
+        textDisplay.text = "";
+        textPrompt.position.y = textDisplay.position.y;
+      }
+
+      function addDisplayText( text ) {
+        displayTextBuffer += text;
       }
 
       function Update( timestamp, timeDiffInMs ) {
         // Add Update Loop
         // console.log( timestamp, timeDiffInMs );
-        if( timestamp > 5000 ) {
-          Unicorn.RemoveOverlay( "icon" );
+        // Update Display Text
+        if( displayTextBuffer && displayTextCooldown <= 0 ) {
+          displayTextCooldown = autoTextTime;
+          textDisplay.text += displayTextBuffer[ 0 ];
+          displayTextBuffer = displayTextBuffer.substring( 1, displayTextBuffer.length );
+          textLines = textDisplay.text.split( "\n" ).length;
+          textPrompt.position.y = textDisplay.position.y + 25 * textLines;
+        }
+        if( displayTextCooldown > 0 ) {
+          displayTextCooldown -= timeDiffInMs;
         }
       }
 
@@ -133,7 +160,6 @@
           // screenWalls: false, // Default: true
           // wallBottom: true,
           gravity: { x: 0, y: 0 },
-          // gravity: { x: 0, y: 2 } // Default: { x: 0, y: 1 }
         });
       }
 
@@ -143,7 +169,6 @@
       var selectedWord;
       var typedword = "";
       var revealedWord = "";
-      var definitionTimer = null;
       // console.log( selectedWord );
 
       function newWord( difficulty ) {
@@ -154,16 +179,6 @@
         isSolved = false;
 
         answer.text = revealedWord.split( "" ).join( " " );
-        definition.text = "";
-        clearTimeout( definitionTimer );
-        // TODO: Show the definition if the word gets solved before the hint shows
-        definitionTimer = setTimeout( () => {
-          fetch( `https://www.instafluff.tv/ComfyDictionary/en/${selectedWord}.json` )
-            .then( r => r.json() )
-            .then( r => {
-              definition.text = r.definition;
-            });
-        }, 60000 );
       }
 
       function checkWord( selectedWord, typedword ) {
