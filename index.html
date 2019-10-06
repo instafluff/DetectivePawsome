@@ -108,7 +108,15 @@
 
       function OnChatMessage( user, message, flags, self, extra ) {
         // Handle Chat Messages
-        console.log( message );
+        if( checkWord( selectedWord, message.split( " " )[ 0 ] ) ) {
+          if( !isSolved && selectedWord === message.split( " " )[ 0 ] ) {
+            isSolved = true;
+            console.log( "SOLVED BY " + user );
+            setTimeout( () => {
+              newWord( gameDifficulty );
+            }, 3000 );
+          }
+        }
       }
 
       function CreateGame() {
@@ -172,19 +180,6 @@
 
         return !revealedWord.includes( "_" );
       }
-
-      ComfyJS.onChat = ( user, message, self, extra ) => {
-        if( checkWord( selectedWord, message.split( " " )[ 0 ] ) ) {
-          if( !isSolved && selectedWord === message.split( " " )[ 0 ] ) {
-            isSolved = true;
-            console.log( "SOLVED BY " + user );
-            setTimeout( () => {
-              newWord( gameDifficulty );
-            }, 3000 );
-          }
-        }
-      }
-      ComfyJS.Init( "instafluff" );
     </script>
   </body>
 </html>
