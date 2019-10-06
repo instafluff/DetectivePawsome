@@ -36,6 +36,7 @@
       /* eslint-enabled */
 
       var bg2;
+      const maxTextWidth = 18;
       const autoTextTime = 60;
       var displayTextCooldown = 0;
       var displayTextBuffer = "", textLines = 0;
@@ -56,7 +57,7 @@
         textDisplay = Unicorn.AddText( "textDisplay", "", 190, 100, {
           fontFamily: "Share Tech Mono",
         } );
-        answer = Unicorn.AddText( "answer", "", 190, 220, {
+        answer = Unicorn.AddText( "answer", "", 190, -1000, {// 220, {
           fontFamily: "Share Tech Mono",
         } );
         textPrompt = Unicorn.AddText( "textPrompt", "_", 190, 100, {
@@ -90,7 +91,7 @@
             typedword = "";
             break;
           default:
-            if( key.match( /^[a-zA-Z]{1}$/ ) ) {
+            if( typedword.length < maxTextWidth && key.match( /^[a-zA-Z]{1}$/ ) ) {
               typedword += key;
             }
             break;
@@ -106,10 +107,10 @@
         }, 3000 );
         setTimeout( () => {
           // clearDisplayText();
-          addDisplayText( "\nPlease Log In." );
+          addDisplayText( "\nPlease log in:" );
         }, 6000 );
         setTimeout( () => {
-          addDisplayText( "\nNeed a hint?\nHa, you get NOTHING\n" );
+          addDisplayText( "\nNeed a hint?\nHa! It's NOTHING\nfor you.\n" );
         }, 60000 );
       }
 
@@ -119,7 +120,7 @@
       }
 
       function addDisplayText( text ) {
-        displayTextBuffer += text.split( "\n" ).map( x => x.length > 18 ? x.replace(/(?!$|\n)([^\n]{18}(?!\n))/g, "$1\n") : x ).join( "\n" );
+        displayTextBuffer += text.split( "\n" ).map( x => x.length > maxTextWidth ? x.replace(/(?!$|\n)([^\n]{18}(?!\n))/g, "$1\n") : x ).join( "\n" );
       }
 
       function Update( timestamp, timeDiffInMs ) {
@@ -131,7 +132,7 @@
           textDisplay.text += displayTextBuffer[ 0 ];
           displayTextBuffer = displayTextBuffer.substring( 1, displayTextBuffer.length );
           textLines = textDisplay.text.split( "\n" ).length;
-          if( textLines > 3 ) {
+          if( textLines > 4 ) {
             // Remove the first line and continue!
             var lines = textDisplay.text.split( "\n" );
             lines.shift();
