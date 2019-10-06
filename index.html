@@ -59,17 +59,17 @@
         answer = Unicorn.AddText( "answer", "", 190, 220, {
           fontFamily: "Share Tech Mono",
         } );
-        textPrompt = Unicorn.AddText( "textPrompt", "|", 190, 100, {
+        textPrompt = Unicorn.AddText( "textPrompt", "_", 190, 100, {
           fontFamily: "Share Tech Mono",
         } );
 
         newWord( gameDifficulty );
         setInterval( () => {
-          if( textPrompt.text.endsWith( "|" ) ) {
+          if( textPrompt.text.endsWith( "_" ) ) {
             textPrompt.text = textPrompt.text.substring( 0, textPrompt.text.length - 1 );
           }
           else {
-            textPrompt.text += "|";
+            textPrompt.text += "_";
           }
         }, 350 );
         keyboard.on( 'keydown', ( key ) => {
@@ -109,8 +109,8 @@
           addDisplayText( "\nPlease Log In." );
         }, 6000 );
         setTimeout( () => {
-          addDisplayText( "\nHint:\nYou have NOTHING\nto fear." );
-        }, 15000 );
+          addDisplayText( "\nNeed a hint?\nHa, you get NOTHING\n" );
+        }, 60000 );
       }
 
       function clearDisplayText() {
