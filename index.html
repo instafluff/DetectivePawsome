@@ -39,12 +39,19 @@
       }());
       /* eslint-enabled */
 
+      var bg2;
       var answer, definition, word;
 
       function Init() {
         Unicorn.Load( "bg1", "web/assets/bcg1.png" );
+        Unicorn.Load( "bg2", "web/assets/bcg2.png" );
 
         Unicorn.AddOverlay( "bg1", "bg1", 0, 0 );
+        bg2 = Unicorn.AddOverlay( "bg2", "bg2", 0, 0 );
+        console.log( bg2 );
+        setInterval( () => {
+          bg2.visible = !bg2.visible;
+        }, 100 );
         answer = Unicorn.AddText( "answer", "", 190, 110 );
         definition = Unicorn.AddText( "definition", "definition", 0, 0 );
         word = Unicorn.AddText( "word", "|", 190, 150 );
