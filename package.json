@@ -1,0 +1,30 @@
+{
+  "name": "detectivepawsome",
+  "version": "1.0.0",
+  "description": "Ludum Dare 45 Game Jam! Captain of Catastrophe is at it again and this time with nasty ransomware! Unlock your computer and re-gain access to your files!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/instafluff/DetectivePawsome.git"
+  },
+  "keywords": [
+    "Instafluff",
+    "ludum",
+    "dare",
+    "45",
+    "game",
+    "jam"
+  ],
+  "author": "Instafluff",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/instafluff/DetectivePawsome/issues"
+  },
+  "homepage": "https://github.com/instafluff/DetectivePawsome#readme",
+  "dependencies": {
+    "webwebweb": "^1.1.5"
+  }
+}

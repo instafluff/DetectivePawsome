@@ -1,0 +1,119 @@
+<html>
+  <head>
+    <title>Pink Fluffy Unicorn Game Engine</title>
+    <link href="https://fonts.googleapis.com/css?family=Bubblegum+Sans" rel="stylesheet">
+    <link rel='stylesheet' href='unicorn.css' />
+    <script src="eventemitter.js"></script>
+    <!-- <script src="gamepad.js"></script> -->
+    <script src="keyboard.js"></script>
+    <script src="words.js"></script>
+    <script src="comfy.min.js"></script>
+    <style>
+      body {background-color: coral;}
+    </style>
+  </head>
+  <body>
+    <h1 id="answer"></h1>
+    <h5 id="definition"></h5>
+    <h1 id="word"></h1>
+    <script>
+      var gameDifficulty = 1;
+      var isSolved = false;
+      var words = wordList.split( "," ).filter( x => !x.includes( "-" ) );
+      var selectedWord;
+      var typedword = "";
+      var revealedWord = "";
+      var definitionTimer = null;
+      // console.log( selectedWord );
+
+      function newWord( difficulty ) {
+        var wordsByDifficulty = words.filter( x => x.length >= 4 && x.length <= ( difficulty + 5 ) );
+        selectedWord = wordsByDifficulty[ Math.floor( Math.random() * wordsByDifficulty.length ) ];
+        typedword = "";
+        revealedWord = "_".repeat( selectedWord.length );
+        isSolved = false;
+
+        document.querySelector( "#answer" ).innerText = revealedWord.split( "" ).join( " " );
+        document.querySelector( "#definition" ).innerText = "";
+        clearTimeout( definitionTimer );
+        // TODO: Show the definition if the word gets solved before the hint shows
+        definitionTimer = setTimeout( () => {
+          fetch( `https://www.instafluff.tv/ComfyDictionary/en/${selectedWord}.json` )
+            .then( r => r.json() )
+            .then( r => {
+              document.querySelector( "#definition" ).innerText = r.definition;
+            });
+        }, 60000 );
+      }
+
+      newWord( gameDifficulty );
+      setInterval( () => {
+        if( document.querySelector( "#word" ).innerText.endsWith( "|" ) ) {
+          document.querySelector( "#word" ).innerText = document.querySelector( "#word" ).innerText.substring( 0, document.querySelector( "#word" ).innerText.length - 2 );
+        }
+        else {
+          document.querySelector( "#word" ).innerText += " |";
+        }
+      }, 350 );
+      // gamepad.on( 'connected', console.log );
+      // gamepad.on( 'disconnected', console.log );
+      // gamepad.on( 'update', console.log );
+      keyboard.on( 'keydown', ( key ) => {
+        switch( key ) {
+        case "Backspace":
+          typedword = typedword.substring( 0, typedword.length - 1 );
+          break;
+        case "Enter":
+          if( checkWord( selectedWord, typedword ) ) {
+            if( !isSolved ) {
+              isSolved = true;
+              console.log( "SOLVED BY STREAMER" );
+              setTimeout( () => {
+                newWord( gameDifficulty );
+              }, 3000 );
+            }
+          }
+          typedword = "";
+          break;
+        default:
+          if( key.match( /^[a-zA-Z]{1}$/ ) ) {
+            typedword += key;
+          }
+          break;
+        }
+        document.querySelector( "#word" ).innerText = typedword.split( "" ).join( " " );
+        // console.log( typedword );
+      } );
+      // keyboard.on( 'keyup', console.log );
+      // keyboard.on( 'update', console.log );
+
+      function checkWord( selectedWord, typedword ) {
+        for( var i = 0; i < selectedWord.length && i < typedword.length; i++ ) {
+          // console.log( i, selectedWord[ i ], typedword[ i ] );
+          if( selectedWord[ i ] === typedword[ i ] ) {
+            var parts = revealedWord.split( "" );
+            parts[ i ] = selectedWord[ i ];
+            revealedWord = parts.join( "" );
+            // console.log( revealedWord );
+            document.querySelector( "#answer" ).innerText = revealedWord.split( "" ).join( " " );
+          }
+        }
+
+        return !revealedWord.includes( "_" );
+      }
+
+      ComfyJS.onChat = ( user, message, self, extra ) => {
+        if( checkWord( selectedWord, message.split( " " )[ 0 ] ) ) {
+          if( !isSolved && selectedWord === message.split( " " )[ 0 ] ) {
+            isSolved = true;
+            console.log( "SOLVED BY " + user );
+            setTimeout( () => {
+              newWord( gameDifficulty );
+            }, 3000 );
+          }
+        }
+      }
+      ComfyJS.Init( "instafluff" );
+    </script>
+  </body>
+</html>
