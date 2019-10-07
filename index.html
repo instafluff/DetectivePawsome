@@ -88,7 +88,7 @@
       #tablet_overlay #tablet_hints {
         font-family: "Pixeltype";
         color: #92faff;
-        font-size: 16px;
+        font-size: 15px;
         margin: 31px;
         width: 119px;
         line-height: 1;
@@ -792,20 +792,25 @@
       touch_button_frames.addEventListener("click",tabletAnimation);
 
       var hints = {
-        C: "contains the most water",
         R: "is a pirate",
-        Y: "is the most curious",
+        Y: ["is the most curious", "is 5 in roman numerals"],
         B: "stings",
-        I: ["the letter is you", "is not a team player"],
+        I: ["is you", "is not a team player", "is one in roman numerals"],
         P: ["drank a lot of water", "is round, green and a vegetable"],
-        U: "this letter is me",
-        Q: "a line of waiting people",
+        U: "is me",
+        Q: "is a line of waiting people",
         Z: "is tired",
-        X: "stands for kisses",
+        X: ["stands for kisses", "is 10 in roman numerals"],
         U: "is smiling the most",
         T: "is a hot beverage made from dried leaves",
         A: ["looks like a house", "turns corn into a baby tree (tree seed, oak seed)"],
-        C: "doesn't need glasses"
+        C: ["doesn't need glasses", "is 100 in roman numerals", "contains the most water"],
+        V: "is 5 in roman numerals",
+        M: "is 1000 in roman numerals",
+        L: ["is 50 in roman numerals", "is the main character from Stranger Things"],
+        G: "is a string on a guitar/underwear",
+        W: "is a letter you'll find at the end of a rainbow",
+        H: "is a rung in a ladder"
       };
 
       function numToOrder(n) {
@@ -826,10 +831,8 @@
             var hint = hints[letter.toUpperCase()];
             if (typeof hint === "string") {
               hintsText += numToOrder(counter) + " one " + hint + "<br>";
-              console.log(letter,hints[letter]);
             } else {
               hintsText += numToOrder(counter) + " one " + hint[Math.floor(Math.random()*hint.length)] + "<br>";
-              console.log(hint,hint.length,Math.floor(Math.random()*hint.length), hint[Math.floor(Math.random()*hint.length)]);
             }
           }
         });
@@ -856,8 +859,11 @@
           /* after the detective is woken up, start everything */
           if ( animations.eyesClosing.state >= animations.eyesClosing.frames ) {
             clearInterval(eyes_closing_timer);
-            eyes_closing_frames.style.opacity = 1;
+            eyes_closing_frames.style.opacity = 0;
             setGameState( "Intro" );
+            setTimeout(function() {
+              eyes_closing_frames.style.display = "none";
+            },1000);
           }
         }, animations.eyesClosing.interval);
       }
