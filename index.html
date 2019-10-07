@@ -450,6 +450,7 @@
             setTimeout( () => {
               if( gameState !== "Pawzzle" ) {
                 setGameState( "Pawzzle" );
+                pawswordTimer = pawswordTimeLimit;
               }
             }, 12000 );
             break;
@@ -470,7 +471,6 @@
                 }
               }, 60 );
             }
-            pawswordTimer = pawswordTimeLimit;
             cityredlights.forEach( x => x.visible = false );
             clearDisplayText();
             delayedText( `Level ${gameLevel} of ${finalLevel}`, 500 );
@@ -548,6 +548,7 @@
             break;
           case "Intro3":
             setGameState( "Pawzzle" );
+            pawswordTimer = pawswordTimeLimit;
             break;
           case "Pawzzle":
             if( gameLevel < finalLevel ) {
@@ -592,9 +593,11 @@
             break;
           case "Intro2":
             setGameState( "Pawzzle" );
+            pawswordTimer = pawswordTimeLimit;
             break;
           case "Intro3":
             setGameState( "Pawzzle" );
+            pawswordTimer = pawswordTimeLimit;
             break;
           case "Pawzzle":
             break;
