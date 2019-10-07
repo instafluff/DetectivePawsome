@@ -42,6 +42,8 @@
       var displayTextBuffer = "", textLines = 0;
       var textDisplay;
       var textPrompt, answer;
+      var gameState = "";
+      var textTimers = [];
 
       function Init() {
         Unicorn.Load( "bg1", "web/assets/bcg1.png" );
@@ -57,14 +59,14 @@
         textDisplay = Unicorn.AddText( "textDisplay", "", 190, 100, {
           fontFamily: "Share Tech Mono",
         } );
-        answer = Unicorn.AddText( "answer", "", 190, -1000, {// 220, {
+        answer = Unicorn.AddText( "answer", "", 190, 220, {
           fontFamily: "Share Tech Mono",
         } );
         textPrompt = Unicorn.AddText( "textPrompt", "_", 190, 100, {
           fontFamily: "Share Tech Mono",
         } );
 
-        newWord( gameDifficulty );
+        // Prompt Cursor
         setInterval( () => {
           if( textPrompt.text.endsWith( "_" ) ) {
             textPrompt.text = textPrompt.text.substring( 0, textPrompt.text.length - 1 );
@@ -81,12 +83,11 @@
           case "Enter":
             if( checkWord( selectedWord, typedword ) ) {
               if( !isSolved ) {
-                isSolved = true;
-                console.log( "SOLVED BY STREAMER" );
-                setTimeout( () => {
-                  newWord( gameDifficulty );
-                }, 3000 );
+                setSolved( "STREAMER" );
               }
+            }
+            else {
+              incorrectAnswer();
             }
             typedword = "";
             break;
@@ -102,25 +103,103 @@
         
         // addDisplayText( "Testing a really long sentence to see if this works.\n" );
 
-        setTimeout( () => {
-          addDisplayText( "Hello\nDetective Pawsome." );
-        }, 3000 );
-        setTimeout( () => {
-          // clearDisplayText();
-          addDisplayText( "\nPlease log in:" );
-        }, 6000 );
-        setTimeout( () => {
-          addDisplayText( "\nNeed a hint?\nHa! It's NOTHING\nfor you.\n" );
-        }, 60000 );
+        setGameState( "Intro" );
       }
 
       function clearDisplayText() {
         textDisplay.text = "";
+        displayTextBuffer = "";
         textPrompt.position.y = textDisplay.position.y;
       }
 
       function addDisplayText( text ) {
         displayTextBuffer += text.split( "\n" ).map( x => x.length > maxTextWidth ? x.replace(/(?!$|\n)([^\n]{18}(?!\n))/g, "$1\n") : x ).join( "\n" );
+      }
+
+      function delayedText( text, time ) {
+        textTimers.push( setTimeout( () => {
+          addDisplayText( text );
+        }, time ) );
+      }
+
+      function setGameState( state ) {
+        if( gameState !== state ) {
+          gameState = state;
+          textTimers.forEach( x => clearTimeout( x ) );
+        }
+        switch( state ) {
+          case "Intro":
+            clearDisplayText();
+            delayedText( "Hello\nDetective Pawsome.", 1000 );
+            delayedText( "\nPlease log in:", 3000 );
+            delayedText( "\nYou got NOTHING?", 15000 );
+            delayedText( "\nIt's NOTHING.", 20000 );
+            delayedText( "\nReally.\nIt's NOTHING.", 30000 );
+            delayedText( "\nJust type it.", 45000 );
+            delayedText( "\nSeriously.", 50000 );
+            delayedText( "\nYou there?", 60000 );
+            delayedText( "\nHello?", 90000 );
+            break;
+          case "Intro2":
+            clearDisplayText();
+            delayedText( "You have\n1 message.\nOpen? yes/no", 1000 );
+            delayedText( "\nType yes.", 15000 );
+            delayedText( "\nTYPE yes.", 25000 );
+            break;
+          case "Intro3":
+            clearDisplayText();
+            delayedText( "\"Hey Paws,\nI've taken over\nyour computer.", 1000 );
+            delayedText( "\nAnd the city.", 5000 );
+            delayedText( "\nDon't stop me.", 7000 );
+            delayedText( "\n-Catastrophe\"", 9000 );
+            break;
+          case "Pawzzle":
+            clearDisplayText();
+            delayedText( `Level ${gameLevel} of ${finalLevel}`, 500 );
+            delayedText( "\nGuess Pawsword:", 1000 );
+            break;
+        }
+        newWord( gameDifficulty );
+      }
+
+      function setSolved( user ) {
+        isSolved = true;
+        switch( gameState ) {
+          case "Intro":
+            setGameState( "Intro2" );
+            break;
+          case "Intro2":
+            setGameState( "Intro3" );
+            break;
+          case "Intro3":
+            setGameState( "Pawzzle" );
+            break;
+          case "Pawzzle":
+            if( gameLevel < finalLevel ) {
+              gameLevel++;
+            }
+            delayedText( "\nCongrats!", 0 );
+            setTimeout( () => {
+              setGameState( "Pawzzle" );
+            }, 3000 );
+            break;
+        }
+        console.log( "SOLVED BY " + user );
+      }
+
+      function incorrectAnswer() {
+        switch( gameState ) {
+          case "Intro":
+            break;
+          case "Intro2":
+            setGameState( "Pawzzle" );
+            break;
+          case "Intro3":
+            setGameState( "Pawzzle" );
+            break;
+          case "Pawzzle":
+            break;
+        }
       }
 
       function Update( timestamp, timeDiffInMs ) {
@@ -150,11 +229,7 @@
         // Handle Chat Messages
         if( checkWord( selectedWord, message.split( " " )[ 0 ] ) ) {
           if( !isSolved && selectedWord === message.split( " " )[ 0 ] ) {
-            isSolved = true;
-            console.log( "SOLVED BY " + user );
-            setTimeout( () => {
-              newWord( gameDifficulty );
-            }, 3000 );
+            setSolved( user )
           }
         }
       }
@@ -177,6 +252,8 @@
       }
 
       var gameDifficulty = 1;
+      var gameLevel = 1;
+      var finalLevel = 5;
       var isSolved = false;
       var words = wordList.split( "," ).filter( x => !x.includes( "-" ) );
       var selectedWord;
@@ -185,28 +262,48 @@
       // console.log( selectedWord );
 
       function newWord( difficulty ) {
-        var wordsByDifficulty = words.filter( x => x.length >= 4 && x.length <= ( difficulty + 5 ) );
-        selectedWord = wordsByDifficulty[ Math.floor( Math.random() * wordsByDifficulty.length ) ];
+        switch( gameState ) {
+          case "Intro":
+            selectedWord = "nothing";
+            revealedWord = "";
+            answer.visible = false;
+            break;
+          case "Intro2":
+            selectedWord = "yes";
+            revealedWord = "";
+            answer.visible = false;
+            break;
+          case "Intro3":
+            selectedWord = "captain";
+            revealedWord = "";
+            answer.visible = false;
+            break;
+          case "Pawzzle":
+            var wordsByDifficulty = words.filter( x => x.length >= 4 && x.length <= ( difficulty + 5 ) );
+            selectedWord = wordsByDifficulty[ Math.floor( Math.random() * wordsByDifficulty.length ) ];
+            revealedWord = "_".repeat( selectedWord.length );
+            answer.visible = true;
+            break;
+        }
         typedword = "";
-        revealedWord = "_".repeat( selectedWord.length );
         isSolved = false;
-
         answer.text = revealedWord.split( "" ).join( " " );
       }
 
       function checkWord( selectedWord, typedword ) {
-        for( var i = 0; i < selectedWord.length && i < typedword.length; i++ ) {
-          // console.log( i, selectedWord[ i ], typedword[ i ] );
-          if( selectedWord[ i ] === typedword[ i ] ) {
+        var word1 = selectedWord.toLowerCase();
+        var word2 = typedword.toLowerCase();
+        for( var i = 0; i < word1.length && i < word2.length; i++ ) {
+          // console.log( i, word1[ i ], word1[ i ] );
+          if( word1[ i ] === word2[ i ] ) {
             var parts = revealedWord.split( "" );
-            parts[ i ] = selectedWord[ i ];
+            parts[ i ] = word1[ i ];
             revealedWord = parts.join( "" );
             // console.log( revealedWord );
             answer.text = revealedWord.split( "" ).join( " " );
           }
         }
-
-        return !revealedWord.includes( "_" );
+        return revealedWord === selectedWord;
       }
     </script>
   </body>
