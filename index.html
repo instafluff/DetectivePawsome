@@ -112,7 +112,7 @@
   </head>
   <body>
     <div id="overlay_container">
-      <div id="eyes_closing_frames" class="animated" style="opacity: 0; background: #050e1e;"></div>
+      <div id="eyes_closing_frames" class="animated" style="background: #050e1e;"></div>
       <div id="touch_button_frames" class="animated" style="opacity: 0;">
         <div id="touch_button_frame" data-frame="0"></div>
         <div id="touch_button_frame" data-frame="1"></div>
@@ -358,7 +358,7 @@
                 div.style.display = "block";
           eyes_closing_frames.appendChild(div);
         }
-        setTimeout(openEyes, 5000);
+        setTimeout(openEyes, 2000);
       }
 
       function clearDisplayText() {
@@ -801,7 +801,6 @@
       /* First opening eyes animation begins! */
       function openEyes() {
         window["unicorn-display"].style.opacity = 1;
-        eyes_closing_frames.style.opacity = 1;
         tablet_desk.style.opacity = 1;
         eyes_closing_frames.style.background = "#050e1e00";
 
