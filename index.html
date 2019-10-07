@@ -725,20 +725,32 @@
         C: "doesn't need glasses"
       };
 
+      function numToOrder(n) {
+        switch(n) {
+          case 1: return "1st";
+          case 2: return "2nd";
+          case 3: return "3rd";
+          default: return n + "th";
+        }
+      }
+
       function printHints() {
-        var hintsText = "";
+        var hintsText = "", counter = 0;
         selectedWord.split("").forEach(function(letter) {
+          counter++;
           if (hints.hasOwnProperty(letter.toUpperCase()))
           {
             var hint = hints[letter.toUpperCase()];
             if (typeof hint === "string") {
-              hintsText += hint + "<br>";
+              hintsText += numToOrder(counter) + " one " + hint + "<br>";
+              console.log(letter,hints[letter]);
             } else {
-              hintsText += hint[Math.round(Math.random()*hint.length-1)] + "<br>";
+              hintsText += numToOrder(counter) + " one " + hint[Math.floor(Math.random()*hint.length)] + "<br>";
+              console.log(hint,hint.length,Math.floor(Math.random()*hint.length), hint[Math.floor(Math.random()*hint.length)]);
             }
           }
         });
-        tablet_hints.innerHTML = "Hints:<br><br>" + hintsText;
+        tablet_hints.innerHTML = "Hints for letters:<br><br>" + hintsText;
       }
     </script>
   </body>
