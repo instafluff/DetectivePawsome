@@ -40,6 +40,7 @@
       /* eslint-enabled */
 
       var owl1, owl2, pawlice, lightning;
+      var redScreen;
       var rains = [];
       var rainIndex = 0;
       const maxTextWidth = 18;
@@ -67,6 +68,7 @@
         Unicorn.Load( "rain2", "web/assets/rain2.png" );
         Unicorn.Load( "rain3", "web/assets/rain3.png" );
         Unicorn.Load( "room", "web/assets/room.png" );
+        Unicorn.Load( "red_Screen", "web/assets/red_Screen.png" );
         Unicorn.Load( "lamp_light", "web/assets/lamp_light.png" );
         Unicorn.Load( "lightning_city", "web/assets/lightning_city.png" );
 
@@ -84,6 +86,8 @@
         rains.push( Unicorn.AddOverlay( "rain3", "rain3", 0, 0 ) );
         lightning = Unicorn.AddOverlay( "lightning_city", "lightning_city", 0, 0 );
         Unicorn.AddOverlay( "room", "room", 0, 0 );
+        redScreen = Unicorn.AddOverlay( "red_Screen", "red_Screen", 172, 86 );
+        redScreen.visible = false;
         Unicorn.AddOverlay( "lamp_light", "lamp_light", 452, 0 );
         lightning.visible = false;
         // Animate Pawlice Station
@@ -236,8 +240,17 @@
             delayedText( "\nAnd the city.", 5000 );
             delayedText( "\nDon't stop me.", 7000 );
             delayedText( "\n-Catastrophe\"", 9000 );
+            setTimeout( () => {
+              redScreen.visible = true;
+            }, 4000 );
+            setTimeout( () => {
+              if( gameState !== "Pawzzle" ) {
+                setGameState( "Pawzzle" );
+              }
+            }, 12000 );
             break;
           case "Pawzzle":
+            redScreen.visible = true;
             clearDisplayText();
             delayedText( `Level ${gameLevel} of ${finalLevel}`, 500 );
             delayedText( "\nGuess Pawsword:", 1000 );
@@ -263,8 +276,10 @@
               gameLevel++;
             }
             delayedText( "\nCongrats!", 0 );
+            redScreen.visible = false;
             setTimeout( () => {
               setGameState( "Pawzzle" );
+              redScreen.visible = true;
             }, 3000 );
             break;
         }
@@ -274,6 +289,25 @@
       function incorrectAnswer() {
         switch( gameState ) {
           case "Intro":
+            var incorrand = Math.random();
+            if( incorrand < 0.1 ) {
+              delayedText( "\nThat's wrong.", 0 );
+            }
+            else if( incorrand < 0.3 ) {
+              delayedText( "\nTry NOTHING.", 0 );
+            }
+            else if( incorrand < 0.4 ) {
+              delayedText( "\nNope.", 0 );
+            }
+            else if( incorrand < 0.6 ) {
+              delayedText( "\nWhat are you\ndoing?", 0 );
+            }
+            else if( incorrand < 0.8 ) {
+              delayedText( "\nI keep telling\nyou the answer.", 0 );
+            }
+            else {
+              delayedText( "\nIncorrect.", 0 );
+            }
             break;
           case "Intro2":
             setGameState( "Pawzzle" );
