@@ -17,6 +17,10 @@
           google: {
               families: ['Share Tech Mono'],
           },
+          custom: {
+            families: [ "Pixellari", "Pixeltype" ],
+            urls: [ "web/fonts.css" ]
+          },
           active() {
               CreateGame();
           },
@@ -133,13 +137,16 @@
         }, 100 );
 
         textDisplay = Unicorn.AddText( "textDisplay", "", 190, 100, {
-          fontFamily: "Share Tech Mono",
+          fontFamily: "Pixeltype",//"Share Tech Mono",
+          fontSize: 36,
         } );
         answer = Unicorn.AddText( "answer", "", 190, 220, {
-          fontFamily: "Share Tech Mono",
+          fontFamily: "Pixeltype",//"Share Tech Mono",
+          fontSize: 36,
         } );
         textPrompt = Unicorn.AddText( "textPrompt", "_", 190, 100, {
-          fontFamily: "Share Tech Mono",
+          fontFamily: "Pixeltype",//"Share Tech Mono",
+          fontSize: 36,
         } );
 
         // Prompt Cursor
@@ -213,6 +220,7 @@
             delayedText( "\nReally. It's\nNOTHING.", 30000 );
             delayedText( "\nJust type it.", 45000 );
             delayedText( "\nSeriously.", 50000 );
+            delayedText( "\nN-O-T-H-...", 52000 );
             delayedText( "\nYou there?", 60000 );
             delayedText( "\nHello?", 90000 );
             break;
