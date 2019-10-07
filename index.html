@@ -417,23 +417,21 @@
             delayedText( "\nAnd the city.", 5000 );
             delayedText( "\nDon't try to\nstop me.", 7000 );
             delayedText( "\n-Catastrophe\"", 9000 );
-            setTimeout( () => {
-              screenIndex = 0;
-              let hackTimer = setInterval( () => {
-                if( screenIndex < screenHack.length - 1 ) {
-                  screenHack[ screenIndex ].visible = false;
-                  screenIndex = ( screenIndex + 1 ) % screenHack.length;
-                  screenHack[ screenIndex ].visible = true;
-                  if( screenIndex > 25 ) {
-                    redScreen.visible = true;
-                  }
-                }
-                else {
-                  clearInterval( hackTimer );
+            screenIndex = 0;
+            let hackTimer = setInterval( () => {
+              if( screenIndex < screenHack.length - 1 ) {
+                screenHack[ screenIndex ].visible = false;
+                screenIndex = ( screenIndex + 1 ) % screenHack.length;
+                screenHack[ screenIndex ].visible = true;
+                if( screenIndex > 25 ) {
                   redScreen.visible = true;
                 }
-              }, 60 );
-            }, 4000 );
+              }
+              else {
+                clearInterval( hackTimer );
+                redScreen.visible = true;
+              }
+            }, 60 );
             setTimeout( () => {
               if( gameState !== "Pawzzle" ) {
                 setGameState( "Pawzzle" );
@@ -661,7 +659,7 @@
 
       var gameDifficulty = 1;
       var gameLevel = 1;
-      var finalLevel = 1;
+      var finalLevel = 10;
       var isSolved = false;
       var words = wordList.split( "," ).filter( x => !x.includes( "-" ) );
       var selectedWord;
