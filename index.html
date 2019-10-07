@@ -43,7 +43,7 @@
       var redScreen;
       var rains = [];
       var rainIndex = 0;
-      const maxTextWidth = 18;
+      const maxTextWidth = 20;
       const autoTextTime = 60;
       var displayTextCooldown = 0;
       var displayTextBuffer = "", textLines = 0;
@@ -168,6 +168,9 @@
             typedword = typedword.substring( 0, typedword.length - 1 );
             break;
           case "Enter":
+            if( typedword.length === 1 ) {
+              typedword = typedword[ 0 ].repeat( selectedWord.length );
+            }
             if( checkWord( selectedWord, typedword ) ) {
               if( !isSolved ) {
                 setSolved( "STREAMER" );
@@ -200,7 +203,7 @@
       }
 
       function addDisplayText( text ) {
-        displayTextBuffer += text.split( "\n" ).map( x => x.length > maxTextWidth ? x.replace(/(?!$|\n)([^\n]{18}(?!\n))/g, "$1\n") : x ).join( "\n" );
+        displayTextBuffer += text.split( "\n" ).map( x => x.length > maxTextWidth ? x.replace(/(?!$|\n)([^\n]{20}(?!\n))/g, "$1\n") : x ).join( "\n" );
       }
 
       function delayedText( text, time ) {
@@ -253,7 +256,7 @@
             redScreen.visible = true;
             clearDisplayText();
             delayedText( `Level ${gameLevel} of ${finalLevel}`, 500 );
-            delayedText( "\nGuess Pawsword:", 1000 );
+            delayedText( "\nGuess the Pawsword:", 1000 );
             break;
         }
         newWord( gameDifficulty );
