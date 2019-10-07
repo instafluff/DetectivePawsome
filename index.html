@@ -156,6 +156,8 @@
 
       var owl1, owl2, pawlice, pawlice2, lightning;
       var cityredlights = [];
+      var screenHack = [];
+      var screenIndex = 0;
       var redScreen;
       var badEnding = [], goodEnding = [];
       var endingFrame = 0;
@@ -202,6 +204,9 @@
         for( var i = 1; i <= 56; i++ ) {
           Unicorn.Load( "good_ending" + i, `web/assets/animations/good_ending/good_ending${i}.png` );
         }
+        for( var i = 1; i <= 43; i++ ) {
+          Unicorn.Load( "screen_hack" + i, `web/assets/animations/hacked_Screen/screen_hack${i}.png` );
+        }
 
         Unicorn.PlaySound( "music", {
           volume: 0.25 * volume
@@ -229,8 +234,12 @@
         rains.push( Unicorn.AddOverlay( "rain3", "rain3", 0, 0 ) );
         lightning = Unicorn.AddOverlay( "lightning_city", "lightning_city", 0, 0 );
         Unicorn.AddOverlay( "room", "room", 0, 0 );
-        redScreen = Unicorn.AddOverlay( "red_Screen", "red_Screen", 172, 86 );
+        redScreen = Unicorn.AddOverlay( "red_Screen", "red_Screen", 0, 0 );
         redScreen.visible = false;
+        for( var i = 1; i <= 43; i++ ) {
+          screenHack.push( Unicorn.AddOverlay( "screen_hack" + i, "screen_hack" + i, 172, 86 ) );
+          screenHack[ i - 1 ].visible = false;
+        }
         Unicorn.AddOverlay( "lamp_light", "lamp_light", 452, 0 );
         lightning.visible = false;
         // Animate Pawlice Station
@@ -409,7 +418,21 @@
             delayedText( "\nDon't try to\nstop me.", 7000 );
             delayedText( "\n-Catastrophe\"", 9000 );
             setTimeout( () => {
-              redScreen.visible = true;
+              screenIndex = 0;
+              let hackTimer = setInterval( () => {
+                if( screenIndex < screenHack.length - 1 ) {
+                  screenHack[ screenIndex ].visible = false;
+                  screenIndex = ( screenIndex + 1 ) % screenHack.length;
+                  screenHack[ screenIndex ].visible = true;
+                  if( screenIndex > 25 ) {
+                    redScreen.visible = true;
+                  }
+                }
+                else {
+                  clearInterval( hackTimer );
+                  redScreen.visible = true;
+                }
+              }, 60 );
             }, 4000 );
             setTimeout( () => {
               if( gameState !== "Pawzzle" ) {
@@ -418,7 +441,22 @@
             }, 12000 );
             break;
           case "Pawzzle":
-            redScreen.visible = true;
+            if( screenIndex < screenHack.length - 1 ) {
+              let hackTimer = setInterval( () => {
+                if( screenIndex < screenHack.length - 1 ) {
+                  screenHack[ screenIndex ].visible = false;
+                  screenIndex = ( screenIndex + 1 ) % screenHack.length;
+                  screenHack[ screenIndex ].visible = true;
+                  if( screenIndex > 25 ) {
+                    redScreen.visible = true;
+                  }
+                }
+                else {
+                  clearInterval( hackTimer );
+                  redScreen.visible = true;
+                }
+              }, 60 );
+            }
             pawswordTimer = pawswordTimeLimit;
             cityredlights.forEach( x => x.visible = false );
             clearDisplayText();
@@ -501,11 +539,11 @@
           case "Pawzzle":
             if( gameLevel < finalLevel ) {
               gameLevel++;
-              delayedText( "\nCongrats!", 0 );
-              redScreen.visible = false;
+              delayedText( "\nHm.. You got it.", 0 );
+              // redScreen.visible = false;
               setTimeout( () => {
                 setGameState( "Pawzzle" );
-                redScreen.visible = true;
+                // redScreen.visible = true;
               }, 3000 );
             }
             else {
