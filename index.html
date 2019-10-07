@@ -40,6 +40,7 @@
       /* eslint-enabled */
 
       var owl1, owl2, pawlice, lightning;
+      var cityredlights = [];
       var redScreen;
       var rains = [];
       var rainIndex = 0;
@@ -49,8 +50,11 @@
       var displayTextBuffer = "", textLines = 0;
       var textDisplay;
       var textPrompt, answer;
+      var textCountdown;
       var gameState = "";
       var textTimers = [];
+      const pawswordTimeLimit = 1000 * 60 * 1; // 1 mins to guess the pawsword
+      var pawswordTimer = 0;
 
       function Init() {
         Unicorn.Load( "music", "web/assets/music.mp3" ).loop = true;
@@ -60,6 +64,9 @@
         Unicorn.Load( "sfx-thunder2", "web/assets/thunder2.mp3" );
         
         Unicorn.Load( "city", "web/assets/city.png" );
+        for( var i = 1; i <= 15; i++ ) {
+          Unicorn.Load( "cityredlights" + i, `web/assets/red_lights${i}.png` );
+        }
         Unicorn.Load( "owl1", "web/assets/owl1.png" );
         Unicorn.Load( "owl2", "web/assets/owl2.png" );
         Unicorn.Load( "pawlice_noshine", "web/assets/pawlice_noshine.png" );
@@ -77,6 +84,10 @@
         } );
 
         Unicorn.AddOverlay( "city", "city", 0, 0 );
+        for( var i = 1; i <= 15; i++ ) {
+          cityredlights.push( Unicorn.AddOverlay( "cityredlights" + i, "cityredlights" + i, 0, 0 ) );
+          cityredlights[ i - 1 ].visible = false;
+        }
         owl1 = Unicorn.AddOverlay( "owl1", "owl1", 38, 60 );
         owl2 = Unicorn.AddOverlay( "owl2", "owl2", 38, 60 );
         Unicorn.AddOverlay( "pawlice_noshine", "pawlice_noshine", 498, 22 );
@@ -152,6 +163,12 @@
           fontFamily: "Pixeltype",//"Share Tech Mono",
           fontSize: 36,
         } );
+        textCountdown = Unicorn.AddText( "textCount", "", 100, 200, {
+          fontFamily: "Pixellari",
+          fontSize: 48,
+          fill: "#1EDFE8"
+        } );
+        textCountdown.anchor.set( 0.5 );
 
         // Prompt Cursor
         setInterval( () => {
@@ -254,6 +271,8 @@
             break;
           case "Pawzzle":
             redScreen.visible = true;
+            pawswordTimer = pawswordTimeLimit;
+            cityredlights.forEach( x => x.visible = false );
             clearDisplayText();
             delayedText( `Level ${gameLevel} of ${finalLevel}`, 500 );
             delayedText( "\nGuess the Pawsword:", 1000 );
@@ -346,6 +365,18 @@
         }
         if( displayTextCooldown > 0 ) {
           displayTextCooldown -= timeDiffInMs;
+        }
+        if( pawswordTimer > 0 ) {
+          pawswordTimer -= timeDiffInMs;
+          var redlightsIndex = 14 - Math.floor( 15 * pawswordTimer / pawswordTimeLimit );
+          cityredlights[ redlightsIndex ].visible = true;
+          textCountdown.text = Math.floor( pawswordTimer / 1000 );
+          if( pawswordTimer <= 0 ) {
+            // TODO: GAME OVER!
+          }
+        }
+        else {
+          textCountdown.text = "";
         }
       }
 
