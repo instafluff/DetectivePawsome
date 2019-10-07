@@ -1,15 +1,20 @@
 <html>
   <head>
     <title>Detective Pawsome!</title>
+    <meta charset="utf-8">
     <script src="web/pinkfluffyunicorn.min.js"></script>
     <script src="web/eventemitter.js"></script>
     <script src="web/keyboard.js"></script>
     <script src="web/words.js"></script>
     <style>
       body { margin: 0; }
+      #tablet_overlay {
+        
+      }
     </style>
   </head>
   <body>
+    <div id="tablet_overlay"></div>
     <div id="unicorn-display"></div>
     <script>
       const params = new URLSearchParams(location.search);
