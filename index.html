@@ -7,7 +7,7 @@
     <script src="web/keyboard.js"></script>
     <script src="web/words.js"></script>
     <style>
-      body { margin: 0; }
+      body { margin: 0; background: #050e1e; }
 
       /* pawesome font-face */
       @font-face {
@@ -100,7 +100,7 @@
         height: 360px;
         position: absolute;
         top: 0; left: 0;
-        z-index: -1;
+        z-index: 1;
       }
       #eyes_closing_frames div {
         position: absolute;
@@ -112,7 +112,7 @@
   </head>
   <body>
     <div id="overlay_container">
-      <div id="eyes_closing_frames" class="animated" style="opacity: 0;"></div>
+      <div id="eyes_closing_frames" class="animated" style="opacity: 0; background: #050e1e;"></div>
       <div id="touch_button_frames" class="animated" style="opacity: 0;">
         <div id="touch_button_frame" data-frame="0"></div>
         <div id="touch_button_frame" data-frame="1"></div>
@@ -120,12 +120,12 @@
         <div id="touch_button_frame" data-frame="3"></div>
         <div id="touch_button_frame" data-frame="4"></div>
       </div>
-      <div id="tablet_desk" class="animated"></div>
+      <div id="tablet_desk" class="animated" style="opacity: 0;"></div>
       <div id="tablet_overlay" class="animated">
         <div id="tablet_hints"></div>
       </div>
     </div>
-    <div id="unicorn-display"></div>
+    <div id="unicorn-display" style="opacity: 0;"></div>
     <script>
       const params = new URLSearchParams(location.search);
       window.WebFontConfig = {
@@ -350,7 +350,15 @@
         
         // addDisplayText( "Testing a really long sentence to see if this works.\n" );
 
-        openEyes();
+        for (var i = 0; i < 41; i++) {
+          var div = document.createElement("div");
+              div.id = "eyes_closing_frame";
+              div.style.background = "url('web/assets/animations/eyes_closing/eyes_closing"+(i+1)+".png')";
+              if (i == 0)
+                div.style.display = "block";
+          eyes_closing_frames.appendChild(div);
+        }
+        setTimeout(openEyes, 5000);
       }
 
       function clearDisplayText() {
@@ -687,6 +695,11 @@
         tablet: {
           state: 0,
           firstClicked: false
+        },
+        eyesClosing: {
+          interval: 50,
+          state: 0,
+          frames: 41
         }
       };
       var touch_button_timer = setInterval(function(){
@@ -787,14 +800,29 @@
 
       /* First opening eyes animation begins! */
       function openEyes() {
+        window["unicorn-display"].style.opacity = 1;
         eyes_closing_frames.style.opacity = 1;
-        for (var i = 0; i < 41; i++) {
-          var div = document.createElement("div");
-              div.id = "eyes_closing_frame";
-              div.style.background = "url('web/assets/animations/eyes_closing/eyes_closing"+(i+1)+".png')";
-          eyes_closing_frames.appendChild(div);
-        }
-        setGameState( "Intro" );
+        tablet_desk.style.opacity = 1;
+        eyes_closing_frames.style.background = "#050e1e00";
+
+        var eyes_closing_timer = setInterval(function(){
+          /* change the frame */
+          var btn_frames = eyes_closing_frames.children;
+          Array.prototype.forEach.call(btn_frames, function(el, i){
+            el.style.display = (i == animations.eyesClosing.state)
+              ? "block" : "none";
+          });
+
+          /* increment the state and get new frame */
+          animations.eyesClosing.state++;
+
+          /* after the detective is woken up, start everything */
+          if ( animations.eyesClosing.state >= animations.eyesClosing.frames ) {
+            clearInterval(eyes_closing_timer);
+            eyes_closing_frames.style.opacity = 1;
+            setGameState( "Intro" );
+          }
+        }, animations.eyesClosing.interval);
       }
     </script>
   </body>
