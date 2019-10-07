@@ -35,7 +35,7 @@
       }());
       /* eslint-enabled */
 
-      var owl1, owl2, lightning;
+      var owl1, owl2, pawlice, lightning;
       var rains = [];
       var rainIndex = 0;
       const maxTextWidth = 18;
@@ -54,6 +54,8 @@
         Unicorn.Load( "city", "web/assets/city.png" );
         Unicorn.Load( "owl1", "web/assets/owl1.png" );
         Unicorn.Load( "owl2", "web/assets/owl2.png" );
+        Unicorn.Load( "pawlice_noshine", "web/assets/pawlice_noshine.png" );
+        Unicorn.Load( "pawlice_shine", "web/assets/pawlice_shine.png" );
         Unicorn.Load( "rain1", "web/assets/rain1.png" );
         Unicorn.Load( "rain2", "web/assets/rain2.png" );
         Unicorn.Load( "rain3", "web/assets/rain3.png" );
@@ -64,6 +66,8 @@
         Unicorn.AddOverlay( "city", "city", 0, 0 );
         owl1 = Unicorn.AddOverlay( "owl1", "owl1", 38, 60 );
         owl2 = Unicorn.AddOverlay( "owl2", "owl2", 38, 60 );
+        Unicorn.AddOverlay( "pawlice_noshine", "pawlice_noshine", 498, 22 );
+        pawlice = Unicorn.AddOverlay( "pawlice_shine", "pawlice_shine", 498, 22 );
         rains.push( Unicorn.AddOverlay( "rain1", "rain1", 0, 0 ) );
         rains.push( Unicorn.AddOverlay( "rain2", "rain2", 0, 0 ) );
         rains.push( Unicorn.AddOverlay( "rain3", "rain3", 0, 0 ) );
@@ -71,6 +75,10 @@
         Unicorn.AddOverlay( "room", "room", 0, 0 );
         Unicorn.AddOverlay( "lamp_light", "lamp_light", 452, 0 );
         lightning.visible = false;
+        // Animate Pawlice Station
+        setInterval( () => {
+          pawlice.visible = !pawlice.visible;
+        }, 1000 );
         // Animate Lightning
         setInterval( () => {
           if( Math.random() < 0.01 ) {
