@@ -155,6 +155,7 @@
       var textTimers = [];
       const pawswordTimeLimit = 1000 * 60 * 5; // 5 mins to guess the pawsword
       var pawswordTimer = 0;
+      var volume = 0.5;
 
       function Init() {
         Unicorn.Load( "music", "web/assets/music.mp3" ).loop = true;
@@ -178,7 +179,7 @@
         Unicorn.Load( "red_Screen", "web/assets/red_Screen.png" );
         Unicorn.Load( "lamp_light", "web/assets/lamp_light.png" );
         Unicorn.Load( "lightning_city", "web/assets/lightning_city.png" );
-        for( var i = 1; i <= 47; i++ ) {
+        for( var i = 1; i <= 48; i++ ) {
           Unicorn.Load( "explosion" + i, `web/assets/animations/explosion/explosion${i}.png` );
         }
         for( var i = 1; i <= 51; i++ ) {
@@ -186,7 +187,7 @@
         }
 
         Unicorn.PlaySound( "music", {
-          volume: 0.25
+          volume: 0.25 * volume
         } );
 
         Unicorn.AddOverlay( "city", "city", 0, 0 );
@@ -196,7 +197,7 @@
         }
         pawlice2 = Unicorn.AddOverlay( "pawlice_noshine", "pawlice_noshine", 498, 22 );
         pawlice = Unicorn.AddOverlay( "pawlice_shine", "pawlice_shine", 498, 22 );
-        for( var i = 1; i <= 47; i++ ) {
+        for( var i = 1; i <= 48; i++ ) {
           badEnding.push( Unicorn.AddOverlay( "explosion" + i, "explosion" + i, 0, 0 ) );
           badEnding[ i - 1 ].visible = false;
         }
@@ -226,14 +227,14 @@
             if( Math.random() < 0.5 ) {
               setTimeout( () => {
                 Unicorn.PlaySound( "sfx-thunder1", {
-                  volume: 0.25
+                  volume: 0.25 * volume
                 } );
               }, Math.random() * 2000 );
             }
             else {
               setTimeout( () => {
                 Unicorn.PlaySound( "sfx-thunder2", {
-                  volume: 0.25
+                  volume: 0.25 * volume
                 } );
               }, Math.random() * 2000 );
             }
@@ -521,6 +522,10 @@
             break;
           case "Pawzzle":
             break;
+          case "Win":
+          case "Lose":
+            location.reload();
+            break;
         }
       }
 
@@ -542,7 +547,7 @@
           }
           textPrompt.position.y = textDisplay.position.y + 25 * textLines;
           Unicorn.PlaySound( "sfx-type", {
-            volume: 0.25
+            volume: 0.25 * volume
           } );
         }
         if( displayTextCooldown > 0 ) {
