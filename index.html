@@ -140,6 +140,8 @@
       var owl1, owl2, pawlice, lightning;
       var cityredlights = [];
       var redScreen;
+      var badEnding = [], goodEnding = [];
+      var endingFrame = 0;
       var rains = [];
       var rainIndex = 0;
       const maxTextWidth = 20;
@@ -151,7 +153,7 @@
       var textCountdown;
       var gameState = "";
       var textTimers = [];
-      const pawswordTimeLimit = 1000 * 60 * 1; // 1 mins to guess the pawsword
+      const pawswordTimeLimit = 1000 * 60 * 5; // 5 mins to guess the pawsword
       var pawswordTimer = 0;
 
       function Init() {
@@ -176,6 +178,12 @@
         Unicorn.Load( "red_Screen", "web/assets/red_Screen.png" );
         Unicorn.Load( "lamp_light", "web/assets/lamp_light.png" );
         Unicorn.Load( "lightning_city", "web/assets/lightning_city.png" );
+        for( var i = 1; i <= 47; i++ ) {
+          Unicorn.Load( "explosion" + i, `web/assets/animations/explosion/explosion${i}.png` );
+        }
+        for( var i = 1; i <= 51; i++ ) {
+          Unicorn.Load( "good_ending" + i, `web/assets/animations/good_ending/good_ending${i}.png` );
+        }
 
         Unicorn.PlaySound( "music", {
           volume: 0.25
@@ -186,10 +194,18 @@
           cityredlights.push( Unicorn.AddOverlay( "cityredlights" + i, "cityredlights" + i, 0, 0 ) );
           cityredlights[ i - 1 ].visible = false;
         }
-        owl1 = Unicorn.AddOverlay( "owl1", "owl1", 38, 60 );
-        owl2 = Unicorn.AddOverlay( "owl2", "owl2", 38, 60 );
         Unicorn.AddOverlay( "pawlice_noshine", "pawlice_noshine", 498, 22 );
         pawlice = Unicorn.AddOverlay( "pawlice_shine", "pawlice_shine", 498, 22 );
+        for( var i = 1; i <= 47; i++ ) {
+          badEnding.push( Unicorn.AddOverlay( "explosion" + i, "explosion" + i, 0, 0 ) );
+          badEnding[ i - 1 ].visible = false;
+        }
+        for( var i = 1; i <= 51; i++ ) {
+          goodEnding.push( Unicorn.AddOverlay( "good_ending" + i, "good_ending" + i, 0, 0 ) );
+          goodEnding[ i - 1 ].visible = false;
+        }
+        owl1 = Unicorn.AddOverlay( "owl1", "owl1", 38, 60 );
+        owl2 = Unicorn.AddOverlay( "owl2", "owl2", 38, 60 );
         rains.push( Unicorn.AddOverlay( "rain1", "rain1", 0, 0 ) );
         rains.push( Unicorn.AddOverlay( "rain2", "rain2", 0, 0 ) );
         rains.push( Unicorn.AddOverlay( "rain3", "rain3", 0, 0 ) );
@@ -228,18 +244,26 @@
         }, 200 );
         // Animate Owl
         setInterval( () => {
-          var rand = Math.random();
-          if( rand < 0.01 ) {
-            owl1.visible = false;
-            owl2.visible = false;
+          if( gameState === "Win" ) {
           }
-          else if( rand < 0.25 ) {
+          else if( gameState === "Lose" ) {
             owl1.visible = true;
             owl2.visible = false;
           }
           else {
-            owl1.visible = true;
-            owl2.visible = true;
+            var rand = Math.random();
+            if( rand < 0.01 ) {
+              owl1.visible = false;
+              owl2.visible = false;
+            }
+            else if( rand < 0.25 ) {
+              owl1.visible = true;
+              owl2.visible = false;
+            }
+            else {
+              owl1.visible = true;
+              owl2.visible = true;
+            }
           }
         }, 500 );
         // Animate Rain
@@ -377,6 +401,51 @@
             /* apply the animations */
             touch_button_frames.style.opacity = 1;
             break;
+          case "Lose":
+            pawswordTimer = 0;
+            clearDisplayText();
+            delayedText( "Just as I thought...", 1000 );
+            delayedText( "\nYou can't beat\nthe Captain of\nCATASTROPHE!", 3000 );
+            endingFrame = 0;
+            setTimeout( () => {
+              setInterval( () => {
+                if( endingFrame < badEnding.length ) {
+                  if( endingFrame > 0 ) {
+                    badEnding[ endingFrame - 1 ].visible = false;
+                  }
+                  badEnding[ endingFrame ].visible = true;
+                  endingFrame++;
+                }
+              }, 100 );
+            }, 8000 );
+            break;
+          case "Win":
+            pawswordTimer = 0;
+            cityredlights.forEach( x => x.visible = false );
+            clearDisplayText();
+            delayedText( "NO MEOWIN WAY.", 1000 );
+            delayedText( "\nHow did you...", 5000 );
+            delayedText( "\nAHHHHHHHHHHHHH", 10000 );
+            setTimeout( () => {
+              redScreen.visible = false;
+              clearDisplayText();
+              setInterval( () => {
+                if( endingFrame < goodEnding.length ) {
+                  if( endingFrame > 0 ) {
+                    goodEnding[ endingFrame - 1 ].visible = false;
+                  }
+                  goodEnding[ endingFrame ].visible = true;
+                  endingFrame++;
+                  // TODO: Add credits after the last frame
+                  if( endingFrame >= goodEnding.length ) {
+                    owl1.visible = false;
+                    owl2.visible = false;
+                  }
+                }
+              }, 100 );
+            }, 15000 );
+            endingFrame = 0;
+            break;
         }
         newWord( gameDifficulty );
       }
@@ -396,13 +465,16 @@
           case "Pawzzle":
             if( gameLevel < finalLevel ) {
               gameLevel++;
+              delayedText( "\nCongrats!", 0 );
+              redScreen.visible = false;
+              setTimeout( () => {
+                setGameState( "Pawzzle" );
+                redScreen.visible = true;
+              }, 3000 );
             }
-            delayedText( "\nCongrats!", 0 );
-            redScreen.visible = false;
-            setTimeout( () => {
-              setGameState( "Pawzzle" );
-              redScreen.visible = true;
-            }, 3000 );
+            else {
+              setGameState( "Win" );
+            }
             break;
         }
         console.log( "SOLVED BY " + user );
@@ -468,11 +540,14 @@
         }
         if( pawswordTimer > 0 ) {
           pawswordTimer -= timeDiffInMs;
-          var redlightsIndex = 14 - Math.floor( 15 * pawswordTimer / pawswordTimeLimit );
-          cityredlights[ redlightsIndex ].visible = true;
-          textCountdown.text = Math.floor( pawswordTimer / 1000 );
           if( pawswordTimer <= 0 ) {
-            // TODO: GAME OVER!
+            // GAME OVER!
+            setGameState( "Lose" );
+          }
+          else {
+            var redlightsIndex = 14 - Math.floor( 15 * pawswordTimer / pawswordTimeLimit );
+            cityredlights[ redlightsIndex ].visible = true;
+            textCountdown.text = Math.floor( pawswordTimer / 1000 );
           }
         }
         else {
@@ -508,7 +583,7 @@
 
       var gameDifficulty = 1;
       var gameLevel = 1;
-      var finalLevel = 5;
+      var finalLevel = 1;
       var isSolved = false;
       var words = wordList.split( "," ).filter( x => !x.includes( "-" ) );
       var selectedWord;
@@ -541,6 +616,10 @@
 
             /* set up the hints */
             printHints();
+            break;
+          default:
+            revealedWord = "";
+            answer.visible = false;
             break;
         }
         typedword = "";
