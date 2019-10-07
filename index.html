@@ -8,13 +8,80 @@
     <script src="web/words.js"></script>
     <style>
       body { margin: 0; }
-      #tablet_overlay {
-        
+
+      /* ANIMATION CLASS, for overlays (but can be used anywhere) */
+      .animated {
+        transition: all 1s;
+        -webkit-transition: all 1s;
+        -moz-transition: all 1s;
+        -ms-transition: all 1s;
+        -o-transition: all 1s;
       }
+
+      /* OVERLAYS */
+      #overlay_container {
+        width: 640px;
+        height: 360px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+      }
+      #tablet_overlay {
+        background: url('assets/overlay/tablet_hand.png');
+        width: 301px;
+        height: 317px;
+        position: absolute;
+        right: -301px; bottom: 0;
+      }
+      #tablet_overlay.shown {
+        right: 0;
+      }
+      #tablet_desk {
+        background: url('assets/overlay/tablet_small.png');
+        width: 112px;
+        height: 74px;
+        position: absolute;
+        right: 0px; bottom: 0;
+      }
+      #tablet_desk.hidden {
+        bottom: -104px;
+        right: -60px;
+      }
+
+      /* TOUCH BUTTON */
+      #touch_button_frames {
+        width: 28px;
+        height: 28px;
+        position: absolute;
+        right: 42px; bottom: 23px;
+      }
+      #touch_button_frame {
+        display: none;
+        width: 28px;
+        height: 28px;
+        position: absolute;
+        top: 0; left:0;
+      }
+      #touch_button_frame[data-frame="0"] { background: url("assets/animations/touch_button/touchbut1.png"); }
+      #touch_button_frame[data-frame="1"] { background: url("assets/animations/touch_button/touchbut2.png"); }
+      #touch_button_frame[data-frame="2"] { background: url("assets/animations/touch_button/touchbut3.png"); }
+      #touch_button_frame[data-frame="3"] { background: url("assets/animations/touch_button/touchbut4.png"); }
+      #touch_button_frame[data-frame="4"] { background: url("assets/animations/touch_button/touchbut5.png"); }
     </style>
   </head>
   <body>
-    <div id="tablet_overlay"></div>
+    <div id="overlay_container">
+      <div id="touch_button_frames" class="animated">
+        <div id="touch_button_frame" data-frame="0"></div>
+        <div id="touch_button_frame" data-frame="1"></div>
+        <div id="touch_button_frame" data-frame="2"></div>
+        <div id="touch_button_frame" data-frame="3"></div>
+        <div id="touch_button_frame" data-frame="4"></div>
+      </div>
+      <div id="tablet_desk" class="animated"></div>
+      <div id="tablet_overlay" class="animated"></div>
+    </div>
     <div id="unicorn-display"></div>
     <script>
       const params = new URLSearchParams(location.search);
@@ -465,6 +532,71 @@
         }
         return revealedWord === selectedWord;
       }
+
+
+      /* Patrik's code */
+      /* first make sure the touch button animation is working */
+      var animations = {
+        touchButton: {
+          interval: 150,
+          state: 0,
+          frames: 5
+        },
+        tablet: {
+          state: 0,
+          firstClicked: false
+        }
+      };
+      var touch_button_timer = setInterval(function(){
+        /* change the frame */
+        var btn_frames = touch_button_frames.children;
+        ///btn_frames.forEach();
+        Array.prototype.forEach.call(btn_frames, function(el, i){
+          el.style.display = (i == animations.touchButton.state)
+            ? "block" : "none";
+        });
+        //touch_button_frames.children[animations.touchButton]
+
+        /* increment the state and get new frame */
+        animations.touchButton.state++;
+        if ( animations.touchButton.state >= animations.touchButton.frames )
+          animations.touchButton.state = 0;
+      }, animations.touchButton.interval);
+
+
+      /* click on the tablet triggers two animations */
+      function tabletAnimation() {
+        /* hide the circles animation so it shows up only once */
+        if (!animations.tablet.firstClicked) {
+          animations.tablet.firstClicked = true;
+
+          touch_button_frames.style.opacity = 0;
+          setTimeout(function(){
+            touch_button_frames.style.display = "none";
+            clearInterval(touch_button_timer);
+          },1000);
+        }
+
+        /* begin the animation - using classes */
+        if (animations.tablet.state == 0) {
+          tablet_desk.className += " hidden";
+          setTimeout(function(){
+            tablet_overlay.className += " shown";
+          },1000);
+        } else {
+          tablet_overlay.className = "animated";
+          setTimeout(function(){
+            tablet_desk.className = "animated";
+          },1000);
+        }
+
+        /* update the state */
+        animations.tablet.state = !animations.tablet.state;
+      }
+
+      tablet_desk.addEventListener("click",tabletAnimation);
+      tablet_overlay.addEventListener("click",tabletAnimation);
+      touch_button_frames.addEventListener("click",tabletAnimation);
     </script>
   </body>
 </html>
