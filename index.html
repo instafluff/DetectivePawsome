@@ -48,8 +48,11 @@
       var textTimers = [];
 
       function Init() {
-        // Unicorn.Load( "bg1", "web/assets/bcg1.png" );
-        // Unicorn.Load( "bg2", "web/assets/bcg2.png" );
+        Unicorn.Load( "music", "web/assets/music.mp3" ).loop = true;
+        Unicorn.Load( "sfx-glitch", "web/assets/glitch.mp3" );
+        Unicorn.Load( "sfx-type", "web/assets/type.mp3" );
+        Unicorn.Load( "sfx-thunder1", "web/assets/thunder1.mp3" );
+        Unicorn.Load( "sfx-thunder2", "web/assets/thunder2.mp3" );
         
         Unicorn.Load( "city", "web/assets/city.png" );
         Unicorn.Load( "owl1", "web/assets/owl1.png" );
@@ -62,6 +65,10 @@
         Unicorn.Load( "room", "web/assets/room.png" );
         Unicorn.Load( "lamp_light", "web/assets/lamp_light.png" );
         Unicorn.Load( "lightning_city", "web/assets/lightning_city.png" );
+
+        Unicorn.PlaySound( "music", {
+          volume: 0.25
+        } );
 
         Unicorn.AddOverlay( "city", "city", 0, 0 );
         owl1 = Unicorn.AddOverlay( "owl1", "owl1", 38, 60 );
@@ -81,8 +88,22 @@
         }, 1000 );
         // Animate Lightning
         setInterval( () => {
-          if( Math.random() < 0.01 ) {
+          if( Math.random() < 0.02 ) {
             lightning.visible = true;
+            if( Math.random() < 0.5 ) {
+              setTimeout( () => {
+                Unicorn.PlaySound( "sfx-thunder1", {
+                  volume: 0.25
+                } );
+              }, Math.random() * 2000 );
+            }
+            else {
+              setTimeout( () => {
+                Unicorn.PlaySound( "sfx-thunder2", {
+                  volume: 0.25
+                } );
+              }, Math.random() * 2000 );
+            }
           }
           else {
             lightning.visible = false;
@@ -274,6 +295,9 @@
             textLines--;
           }
           textPrompt.position.y = textDisplay.position.y + 25 * textLines;
+          Unicorn.PlaySound( "sfx-type", {
+            volume: 0.25
+          } );
         }
         if( displayTextCooldown > 0 ) {
           displayTextCooldown -= timeDiffInMs;
