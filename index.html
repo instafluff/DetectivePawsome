@@ -60,9 +60,10 @@
         position: absolute;
         right: -301px; bottom: 0;
         cursor: pointer;
+        z-index: 2;
       }
       #tablet_overlay.shown {
-        right: 0;
+        right: -50px;
       }
       #tablet_desk {
         background: url("web/assets/overlay/tablet_small.png");
@@ -71,6 +72,7 @@
         position: absolute;
         right: 0px; bottom: 0;
         cursor: pointer;
+        z-index: 1;
       }
       #tablet_desk.hidden {
         bottom: -104px;
@@ -104,7 +106,7 @@
         font-size: 15px;
         margin: 31px;
         width: 119px;
-        line-height: 1;
+        line-height: 0.75;
       }
 
       /* eyes closing animation */
@@ -113,7 +115,7 @@
         height: 360px;
         position: absolute;
         top: 0; left: 0;
-        z-index: 1;
+        z-index: 100;
       }
       #eyes_closing_frames div {
         position: absolute;
@@ -420,7 +422,7 @@
             break;
           case "Intro2":
             clearDisplayText();
-            delayedText( "You have\n1 message.\nOpen? yes/no", 1000 );
+            delayedText( "You have\n1 message.\nOpen? yes/yes", 1000 );
             delayedText( "\nType yes.", 15000 );
             delayedText( "\nTYPE yes.", 25000 );
             break;
@@ -804,7 +806,7 @@
 
       var hints = {
         R: "is a pirate",
-        Y: ["is the most curious", "is 5 in roman numerals"],
+        Y: "is the most curious",
         B: "stings",
         I: ["is you", "is not a team player", "is one in roman numerals"],
         P: ["drank a lot of water", "is round, green and a vegetable"],
@@ -814,7 +816,7 @@
         X: ["stands for kisses", "is 10 in roman numerals"],
         U: "is smiling the most",
         T: "is a hot beverage made from dried leaves",
-        A: ["looks like a house", "turns corn into a baby tree (tree seed, oak seed)"],
+        A: ["looks like a house", "turns corn into an oak seed"],
         C: ["doesn't need glasses", "is 100 in roman numerals", "contains the most water"],
         V: "is 5 in roman numerals",
         M: "is 1000 in roman numerals",
@@ -847,7 +849,7 @@
             }
           }
         });
-        tablet_hints.innerHTML = "Hints for letters:<br><br>" + hintsText;
+        tablet_hints.innerHTML = "HINTS FOR LETTERS:<br>" + hintsText;
       }
 
       /* First opening eyes animation begins! */
