@@ -9,6 +9,19 @@
     <style>
       body { margin: 0; }
 
+      /* pawesome font-face */
+      @font-face {
+        font-family: 'Pixeltype';
+        src: url('assets/fonts/Pixeltype.eot');
+        src: url('assets/fonts/Pixeltype.eot?#iefix') format('embedded-opentype'),
+             url('assets/fonts/Pixeltype.svg#Pixeltype') format('svg'),
+             url('assets/fonts/Pixeltype.ttf') format('truetype'),
+             url('assets/fonts/Pixeltype.woff') format('woff'),
+             url('assets/fonts/Pixeltype.woff2') format('woff2');
+        font-weight: normal;
+        font-style: normal;
+      }
+
       /* ANIMATION CLASS, for overlays (but can be used anywhere) */
       .animated {
         transition: all 1s;
@@ -33,6 +46,7 @@
         height: 317px;
         position: absolute;
         right: -301px; bottom: 0;
+        cursor: pointer;
       }
       #tablet_overlay.shown {
         right: 0;
@@ -43,6 +57,7 @@
         height: 74px;
         position: absolute;
         right: 0px; bottom: 0;
+        cursor: pointer;
       }
       #tablet_desk.hidden {
         bottom: -104px;
@@ -68,11 +83,20 @@
       #touch_button_frame[data-frame="2"] { background: url("assets/animations/touch_button/touchbut3.png"); }
       #touch_button_frame[data-frame="3"] { background: url("assets/animations/touch_button/touchbut4.png"); }
       #touch_button_frame[data-frame="4"] { background: url("assets/animations/touch_button/touchbut5.png"); }
+
+      #tablet_overlay #tablet_hints {
+        font-family: "Pixeltype";
+        color: #92faff;
+        font-size: 16px;
+        margin: 31px;
+        width: 119px;
+        line-height: 1;
+      }
     </style>
   </head>
   <body>
     <div id="overlay_container">
-      <div id="touch_button_frames" class="animated">
+      <div id="touch_button_frames" class="animated" style="opacity: 0;">
         <div id="touch_button_frame" data-frame="0"></div>
         <div id="touch_button_frame" data-frame="1"></div>
         <div id="touch_button_frame" data-frame="2"></div>
@@ -80,7 +104,9 @@
         <div id="touch_button_frame" data-frame="4"></div>
       </div>
       <div id="tablet_desk" class="animated"></div>
-      <div id="tablet_overlay" class="animated"></div>
+      <div id="tablet_overlay" class="animated">
+        <div id="tablet_hints"></div>
+      </div>
     </div>
     <div id="unicorn-display"></div>
     <script>
@@ -348,6 +374,8 @@
             clearDisplayText();
             delayedText( `Level ${gameLevel} of ${finalLevel}`, 500 );
             delayedText( "\nGuess the Pawsword:", 1000 );
+            /* apply the animations */
+            touch_button_frames.style.opacity = 1;
             break;
         }
         newWord( gameDifficulty );
@@ -510,6 +538,9 @@
             selectedWord = wordsByDifficulty[ Math.floor( Math.random() * wordsByDifficulty.length ) ];
             revealedWord = "_".repeat( selectedWord.length );
             answer.visible = true;
+
+            /* set up the hints */
+            printHints();
             break;
         }
         typedword = "";
@@ -597,6 +628,39 @@
       tablet_desk.addEventListener("click",tabletAnimation);
       tablet_overlay.addEventListener("click",tabletAnimation);
       touch_button_frames.addEventListener("click",tabletAnimation);
+
+      var hints = {
+        C: "contains the most water",
+        R: "is a pirate",
+        Y: "is the most curious",
+        B: "stings",
+        I: ["the letter is you", "is not a team player"],
+        P: ["drank a lot of water", "is round, green and a vegetable"],
+        U: "this letter is me",
+        Q: "a line of waiting people",
+        Z: "is tired",
+        X: "stands for kisses",
+        U: "is smiling the most",
+        T: "is a hot beverage made from dried leaves",
+        A: ["looks like a house", "turns corn into a baby tree (tree seed, oak seed)"],
+        C: "doesn't need glasses"
+      };
+
+      function printHints() {
+        var hintsText = "";
+        selectedWord.split("").forEach(function(letter) {
+          if (hints.hasOwnProperty(letter.toUpperCase()))
+          {
+            var hint = hints[letter.toUpperCase()];
+            if (typeof hint === "string") {
+              hintsText += hint + "<br>";
+            } else {
+              hintsText += hint[Math.round(Math.random()*hint.length-1)] + "<br>";
+            }
+          }
+        });
+        tablet_hints.innerHTML = "Hints:<br><br>" + hintsText;
+      }
     </script>
   </body>
 </html>
