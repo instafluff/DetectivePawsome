@@ -1,0 +1,888 @@
+<html>
+  <head>
+    <title>Detective Pawsome!</title>
+    <meta charset="utf-8">
+    <script src="web/pinkfluffyunicorn.min.js"></script>
+    <script src="web/eventemitter.js"></script>
+    <script src="web/keyboard.js"></script>
+    <script src="web/words.js"></script>
+    <style>
+      body {
+        margin: 0;
+        background: #050e1e;
+        transform: scale(1.5);
+        -webkit-transform: scale(1.5);
+        -moz-transform: scale(1.5);
+        -ms-transform: scale(1.5);
+        -o-transform: scale(1.5);
+        transform-origin: top left;
+        -webkit-transform-origin: top left;
+        -moz-transform-origin: top left;
+        -ms-transform-origin: top left;
+        -o-transform-origin: top left;
+      }
+
+      /* pawesome font-face */
+      @font-face {
+        font-family: 'Pixeltype';
+        src: url("web/assets/fonts/Pixeltype.eot");
+        src: url("web/assets/fonts/Pixeltype.eot?#iefix') format('embedded-opentype"),
+             url("web/assets/fonts/Pixeltype.svg#Pixeltype') format('svg"),
+             url("web/assets/fonts/Pixeltype.ttf') format('truetype"),
+             url("web/assets/fonts/Pixeltype.woff') format('woff"),
+             url("web/assets/fonts/Pixeltype.woff2') format('woff2");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      /* ANIMATION CLASS, for overlays (but can be used anywhere) */
+      .animated {
+        transition: all 1s;
+        -webkit-transition: all 1s;
+        -moz-transition: all 1s;
+        -ms-transition: all 1s;
+        -o-transition: all 1s;
+      }
+
+      /* OVERLAYS */
+      #overlay_container {
+        width: 640px;
+        height: 360px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+      }
+      #tablet_overlay {
+        background: url("web/assets/overlay/tablet_hand.png");
+        width: 301px;
+        height: 317px;
+        position: absolute;
+        right: -301px; bottom: 0;
+        cursor: pointer;
+        z-index: 2;
+      }
+      #tablet_overlay.shown {
+        right: -50px;
+      }
+      #tablet_desk {
+        background: url("web/assets/overlay/tablet_small.png");
+        width: 112px;
+        height: 74px;
+        position: absolute;
+        right: 0px; bottom: 0;
+        cursor: pointer;
+        z-index: 1;
+      }
+      #tablet_desk.hidden {
+        bottom: -104px;
+        right: -60px;
+      }
+
+      /* TOUCH BUTTON */
+      #touch_button_frames {
+        width: 28px;
+        height: 28px;
+        position: absolute;
+        right: 42px; bottom: 23px;
+      }
+      #touch_button_frame {
+        display: none;
+        width: 28px;
+        height: 28px;
+        position: absolute;
+        top: 0; left:0;
+      }
+      #touch_button_frame[data-frame="0"] { background: url("web/assets/animations/touch_button/touchbut1.png"); }
+      #touch_button_frame[data-frame="1"] { background: url("web/assets/animations/touch_button/touchbut2.png"); }
+      #touch_button_frame[data-frame="2"] { background: url("web/assets/animations/touch_button/touchbut3.png"); }
+      #touch_button_frame[data-frame="3"] { background: url("web/assets/animations/touch_button/touchbut4.png"); }
+      #touch_button_frame[data-frame="4"] { background: url("web/assets/animations/touch_button/touchbut5.png"); }
+
+      /* tablet overlay hints text */
+      #tablet_overlay #tablet_hints {
+        font-family: "Pixeltype";
+        color: #92faff;
+        font-size: 15px;
+        margin: 31px;
+        width: 119px;
+        line-height: 0.75;
+      }
+
+      /* eyes closing animation */
+      #eyes_closing_frames {
+        width: 640px;
+        height: 360px;
+        position: absolute;
+        top: 0; left: 0;
+        z-index: 100;
+      }
+      #eyes_closing_frames div {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="overlay_container">
+      <div id="eyes_closing_frames" class="animated" style="background: #050e1e;"></div>
+      <div id="touch_button_frames" class="animated" style="opacity: 0;">
+        <div id="touch_button_frame" data-frame="0"></div>
+        <div id="touch_button_frame" data-frame="1"></div>
+        <div id="touch_button_frame" data-frame="2"></div>
+        <div id="touch_button_frame" data-frame="3"></div>
+        <div id="touch_button_frame" data-frame="4"></div>
+      </div>
+      <div id="tablet_desk" class="animated" style="opacity: 0;"></div>
+      <div id="tablet_overlay" class="animated">
+        <div id="tablet_hints"></div>
+      </div>
+    </div>
+    <div id="unicorn-display" style="opacity: 0;"></div>
+    <script>
+      const params = new URLSearchParams(location.search);
+      window.WebFontConfig = {
+          google: {
+              families: ['Share Tech Mono'],
+          },
+          custom: {
+            families: [ "Pixellari", "Pixeltype" ],
+            urls: [ "web/fonts.css" ]
+          },
+          active() {
+              CreateGame();
+          },
+      };
+
+      /* eslint-disable */
+      // include the web-font loader script
+      (function() {
+          const wf = document.createElement('script');
+          wf.src = `${document.location.protocol === 'https:' ? 'https' : 'http'
+          }://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js`;
+          wf.type = 'text/javascript';
+          wf.async = 'true';
+          const s = document.getElementsByTagName('script')[0];
+          s.parentNode.insertBefore(wf, s);
+      }());
+      /* eslint-enabled */
+
+      var owl1, owl2, pawlice, pawlice2, lightning;
+      var cityredlights = [];
+      var screenHack = [];
+      var screenIndex = 0;
+      var redScreen;
+      var badEnding = [], goodEnding = [];
+      var endingFrame = 0;
+      var rains = [];
+      var rainIndex = 0;
+      const maxTextWidth = 20;
+      const autoTextTime = 60;
+      var displayTextCooldown = 0;
+      var displayTextBuffer = "", textLines = 0;
+      var textDisplay;
+      var textPrompt, answer;
+      var textCountdown;
+      var gameState = "";
+      var textTimers = [];
+      const pawswordTimeLimit = 1000 * 60 * 5; // 5 mins to guess the pawsword
+      var pawswordTimer = 0;
+      var volume = 0.5;
+
+      function Init() {
+        Unicorn.Load( "music", "web/assets/music.mp3" ).loop = true;
+        Unicorn.Load( "sfx-glitch", "web/assets/glitch.mp3" );
+        Unicorn.Load( "sfx-type", "web/assets/type.mp3" );
+        Unicorn.Load( "sfx-thunder1", "web/assets/thunder1.mp3" );
+        Unicorn.Load( "sfx-thunder2", "web/assets/thunder2.mp3" );
+        
+        Unicorn.Load( "city", "web/assets/city.png" );
+        for( var i = 1; i <= 15; i++ ) {
+          Unicorn.Load( "cityredlights" + i, `web/assets/red_lights${i}.png` );
+        }
+        Unicorn.Load( "owl1", "web/assets/owl1.png" );
+        Unicorn.Load( "owl2", "web/assets/owl2.png" );
+        Unicorn.Load( "pawlice_noshine", "web/assets/pawlice_noshine.png" );
+        Unicorn.Load( "pawlice_shine", "web/assets/pawlice_shine.png" );
+        Unicorn.Load( "rain1", "web/assets/rain1.png" );
+        Unicorn.Load( "rain2", "web/assets/rain2.png" );
+        Unicorn.Load( "rain3", "web/assets/rain3.png" );
+        Unicorn.Load( "room", "web/assets/room.png" );
+        Unicorn.Load( "red_Screen", "web/assets/red_Screen.png" );
+        Unicorn.Load( "lamp_light", "web/assets/lamp_light.png" );
+        Unicorn.Load( "lightning_city", "web/assets/lightning_city.png" );
+        for( var i = 1; i <= 48; i++ ) {
+          Unicorn.Load( "explosion" + i, `web/assets/animations/explosion/explosion${i}.png` );
+        }
+        for( var i = 1; i <= 56; i++ ) {
+          Unicorn.Load( "good_ending" + i, `web/assets/animations/good_ending/good_ending${i}.png` );
+        }
+        for( var i = 1; i <= 43; i++ ) {
+          Unicorn.Load( "screen_hack" + i, `web/assets/animations/hacked_Screen/screen_hack${i}.png` );
+        }
+
+        Unicorn.PlaySound( "music", {
+          volume: 0.25 * volume
+        } );
+
+        Unicorn.AddOverlay( "city", "city", 0, 0 );
+        for( var i = 1; i <= 15; i++ ) {
+          cityredlights.push( Unicorn.AddOverlay( "cityredlights" + i, "cityredlights" + i, 0, 0 ) );
+          cityredlights[ i - 1 ].visible = false;
+        }
+        pawlice2 = Unicorn.AddOverlay( "pawlice_noshine", "pawlice_noshine", 498, 22 );
+        pawlice = Unicorn.AddOverlay( "pawlice_shine", "pawlice_shine", 498, 22 );
+        for( var i = 1; i <= 48; i++ ) {
+          badEnding.push( Unicorn.AddOverlay( "explosion" + i, "explosion" + i, 0, 0 ) );
+          badEnding[ i - 1 ].visible = false;
+        }
+        for( var i = 1; i <= 56; i++ ) {
+          goodEnding.push( Unicorn.AddOverlay( "good_ending" + i, "good_ending" + i, 0, 0 ) );
+          goodEnding[ i - 1 ].visible = false;
+        }
+        owl1 = Unicorn.AddOverlay( "owl1", "owl1", 38, 60 );
+        owl2 = Unicorn.AddOverlay( "owl2", "owl2", 38, 60 );
+        rains.push( Unicorn.AddOverlay( "rain1", "rain1", 0, 0 ) );
+        rains.push( Unicorn.AddOverlay( "rain2", "rain2", 0, 0 ) );
+        rains.push( Unicorn.AddOverlay( "rain3", "rain3", 0, 0 ) );
+        lightning = Unicorn.AddOverlay( "lightning_city", "lightning_city", 0, 0 );
+        Unicorn.AddOverlay( "room", "room", 0, 0 );
+        redScreen = Unicorn.AddOverlay( "red_Screen", "red_Screen", 0, 0 );
+        redScreen.visible = false;
+        for( var i = 1; i <= 43; i++ ) {
+          screenHack.push( Unicorn.AddOverlay( "screen_hack" + i, "screen_hack" + i, 172, 86 ) );
+          screenHack[ i - 1 ].visible = false;
+        }
+        Unicorn.AddOverlay( "lamp_light", "lamp_light", 452, 0 );
+        lightning.visible = false;
+        // Animate Pawlice Station
+        setInterval( () => {
+          pawlice.visible = !pawlice.visible;
+        }, 1000 );
+        // Animate Lightning
+        setInterval( () => {
+          if( Math.random() < 0.02 ) {
+            lightning.visible = true;
+            if( Math.random() < 0.5 ) {
+              setTimeout( () => {
+                Unicorn.PlaySound( "sfx-thunder1", {
+                  volume: 0.25 * volume
+                } );
+              }, Math.random() * 2000 );
+            }
+            else {
+              setTimeout( () => {
+                Unicorn.PlaySound( "sfx-thunder2", {
+                  volume: 0.25 * volume
+                } );
+              }, Math.random() * 2000 );
+            }
+          }
+          else {
+            lightning.visible = false;
+          }
+        }, 200 );
+        // Animate Owl
+        setInterval( () => {
+          if( gameState === "Win" ) {
+          }
+          else if( gameState === "Lose" ) {
+            owl1.visible = true;
+            owl2.visible = false;
+          }
+          else {
+            var rand = Math.random();
+            if( rand < 0.01 ) {
+              owl1.visible = false;
+              owl2.visible = false;
+            }
+            else if( rand < 0.25 ) {
+              owl1.visible = true;
+              owl2.visible = false;
+            }
+            else {
+              owl1.visible = true;
+              owl2.visible = true;
+            }
+          }
+        }, 500 );
+        // Animate Rain
+        setInterval( () => {
+          rains[ rainIndex ].visible = false;
+          rainIndex = ( rainIndex + 1 ) % rains.length;
+          rains[ rainIndex ].visible = true;
+        }, 100 );
+
+        textDisplay = Unicorn.AddText( "textDisplay", "", 190, 100, {
+          fontFamily: "Pixeltype",//"Share Tech Mono",
+          fontSize: 36,
+        } );
+        answer = Unicorn.AddText( "answer", "", 190, 220, {
+          fontFamily: "Pixeltype",//"Share Tech Mono",
+          fontSize: 36,
+        } );
+        textPrompt = Unicorn.AddText( "textPrompt", "_", 190, 100, {
+          fontFamily: "Pixeltype",//"Share Tech Mono",
+          fontSize: 36,
+        } );
+        textCountdown = Unicorn.AddText( "textCount", "", 100, 200, {
+          fontFamily: "Pixellari",
+          fontSize: 48,
+          fill: "#1EDFE8"
+        } );
+        textCountdown.anchor.set( 0.5 );
+
+        // Prompt Cursor
+        setInterval( () => {
+          if( textPrompt.text.endsWith( "_" ) ) {
+            textPrompt.text = textPrompt.text.substring( 0, textPrompt.text.length - 1 );
+          }
+          else {
+            textPrompt.text += "_";
+          }
+        }, 350 );
+        keyboard.on( 'keydown', ( key ) => {
+          switch( key ) {
+          case "Backspace":
+            typedword = typedword.substring( 0, typedword.length - 1 );
+            break;
+          case "Enter":
+            if( typedword.length === 1 ) {
+              typedword = typedword[ 0 ].repeat( selectedWord.length );
+            }
+            if( checkWord( selectedWord, typedword ) ) {
+              if( !isSolved ) {
+                setSolved( "STREAMER" );
+              }
+            }
+            else {
+              incorrectAnswer();
+            }
+            typedword = "";
+            break;
+          default:
+            if( typedword.length < maxTextWidth && key.match( /^[a-zA-Z]{1}$/ ) ) {
+              typedword += key;
+            }
+            break;
+          }
+          textPrompt.text = typedword.split( "" ).join( "" );
+          // console.log( typedword );
+        } );
+        
+        // addDisplayText( "Testing a really long sentence to see if this works.\n" );
+
+        for (var i = 0; i < 41; i++) {
+          var div = document.createElement("div");
+              div.id = "eyes_closing_frame";
+              div.style.background = "url('web/assets/animations/eyes_closing/eyes_closing"+(i+1)+".png')";
+              if (i == 0)
+                div.style.display = "block";
+          eyes_closing_frames.appendChild(div);
+        }
+        setTimeout(openEyes, 2000);
+      }
+
+      function clearDisplayText() {
+        textDisplay.text = "";
+        displayTextBuffer = "";
+        textPrompt.position.y = textDisplay.position.y;
+      }
+
+      function addDisplayText( text ) {
+        displayTextBuffer += text.split( "\n" ).map( x => x.length > maxTextWidth ? x.replace(/(?!$|\n)([^\n]{20}(?!\n))/g, "$1\n") : x ).join( "\n" );
+      }
+
+      function delayedText( text, time ) {
+        textTimers.push( setTimeout( () => {
+          addDisplayText( text );
+        }, time ) );
+      }
+
+      function setGameState( state ) {
+        if( gameState !== state ) {
+          gameState = state;
+          textTimers.forEach( x => clearTimeout( x ) );
+        }
+        switch( state ) {
+          case "Intro":
+            clearDisplayText();
+            delayedText( "Hello\nDetective Pawsome.", 1000 );
+            delayedText( "\nPlease log in:", 3000 );
+            delayedText( "\nYou got NOTHING?", 15000 );
+            delayedText( "\nIt's NOTHING.", 20000 );
+            delayedText( "\nReally. It's\nNOTHING.", 30000 );
+            delayedText( "\nJust type it.", 45000 );
+            delayedText( "\nSeriously.", 50000 );
+            delayedText( "\nN-O-T-H-...", 52000 );
+            delayedText( "\nYou there?", 60000 );
+            delayedText( "\nHello?", 90000 );
+            break;
+          case "Intro2":
+            clearDisplayText();
+            delayedText( "You have\n1 message.\nOpen? yes/yes", 1000 );
+            delayedText( "\nType yes.", 15000 );
+            delayedText( "\nTYPE yes.", 25000 );
+            break;
+          case "Intro3":
+            clearDisplayText();
+            delayedText( "\"Hey Paws,\nI've taken over\nyour computer.", 1000 );
+            delayedText( "\nAnd the city.", 5000 );
+            delayedText( "\nDon't try to\nstop me.", 7000 );
+            delayedText( "\n-Catastrophe\"", 9000 );
+            screenIndex = 0;
+            let hackTimer = setInterval( () => {
+              if( screenIndex < screenHack.length - 1 ) {
+                screenHack[ screenIndex ].visible = false;
+                screenIndex = ( screenIndex + 1 ) % screenHack.length;
+                screenHack[ screenIndex ].visible = true;
+                if( screenIndex > 25 ) {
+                  redScreen.visible = true;
+                }
+              }
+              else {
+                clearInterval( hackTimer );
+                redScreen.visible = true;
+              }
+            }, 60 );
+            setTimeout( () => {
+              if( gameState !== "Pawzzle" ) {
+                setGameState( "Pawzzle" );
+                pawswordTimer = pawswordTimeLimit;
+              }
+            }, 12000 );
+            break;
+          case "Pawzzle":
+            if( screenIndex < screenHack.length - 1 ) {
+              let hackTimer = setInterval( () => {
+                if( screenIndex < screenHack.length - 1 ) {
+                  screenHack[ screenIndex ].visible = false;
+                  screenIndex = ( screenIndex + 1 ) % screenHack.length;
+                  screenHack[ screenIndex ].visible = true;
+                  if( screenIndex > 25 ) {
+                    redScreen.visible = true;
+                  }
+                }
+                else {
+                  clearInterval( hackTimer );
+                  redScreen.visible = true;
+                }
+              }, 60 );
+            }
+            cityredlights.forEach( x => x.visible = false );
+            clearDisplayText();
+            delayedText( `Level ${gameLevel} of ${finalLevel}`, 500 );
+            delayedText( "\nGuess the Pawsword:", 1000 );
+            /* apply the animations */
+            touch_button_frames.style.opacity = 1;
+            break;
+          case "Lose":
+            pawswordTimer = 0;
+            clearDisplayText();
+            delayedText( "Just as I thought...", 1000 );
+            delayedText( "\nYou can't beat\nthe Captain of\nCATASTROPHE!", 3000 );
+            endingFrame = 0;
+            pawlice.visible = false;
+            pawlice2.visible = false;
+            setTimeout( () => {
+              setInterval( () => {
+                if( endingFrame < badEnding.length ) {
+                  if( endingFrame > 0 ) {
+                    badEnding[ endingFrame - 1 ].visible = false;
+                  }
+                  badEnding[ endingFrame ].visible = true;
+                  endingFrame++;
+                }
+              }, 100 );
+            }, 8000 );
+            break;
+          case "Win":
+            pawswordTimer = 0;
+            cityredlights.forEach( x => x.visible = false );
+            clearDisplayText();
+            delayedText( "NO MEOWIN WAY.", 1000 );
+            delayedText( "\nHow did you...", 5000 );
+            delayedText( "\nAHHHHHHHHHHHHH", 10000 );
+            setTimeout( () => {
+              redScreen.visible = false;
+              clearDisplayText();
+              setInterval( () => {
+                if( endingFrame < goodEnding.length ) {
+                  if( endingFrame > 0 ) {
+                    goodEnding[ endingFrame - 1 ].visible = false;
+                  }
+                  goodEnding[ endingFrame ].visible = true;
+                  endingFrame++;
+                  // Last frame
+                  if( endingFrame >= goodEnding.length ) {
+                    owl1.visible = false;
+                    owl2.visible = false;
+                    // Credits
+                    delayedText( "Detective,\nYou did it.", 1000 );
+                    delayedText( "\nYou have saved\nPawsville from evil.", 4000 );
+                    delayedText( "\n\nThank you for\nplaying our game for\nLudum Dare 45\n\"Start with Nothing\"", 8000 );
+                    delayedText( "\n\nMade by...", 16000 );
+                    delayedText( "\nInstafluff - Code", 18000 );
+                    delayedText( "\nMaayaInsane - Art", 20000 );
+                    delayedText( "\nPatrikHerman - Music & Code", 22000 );
+                  }
+                }
+              }, 100 );
+            }, 15000 );
+            endingFrame = 0;
+            break;
+        }
+        newWord( gameDifficulty );
+      }
+
+      function setSolved( user ) {
+        isSolved = true;
+        switch( gameState ) {
+          case "Intro":
+            setGameState( "Intro2" );
+            break;
+          case "Intro2":
+            setGameState( "Intro3" );
+            break;
+          case "Intro3":
+            setGameState( "Pawzzle" );
+            pawswordTimer = pawswordTimeLimit;
+            break;
+          case "Pawzzle":
+            if( gameLevel < finalLevel ) {
+              gameLevel++;
+              delayedText( "\nHm.. You got it.", 0 );
+              // redScreen.visible = false;
+              setTimeout( () => {
+                setGameState( "Pawzzle" );
+                // redScreen.visible = true;
+              }, 3000 );
+            }
+            else {
+              setGameState( "Win" );
+            }
+            break;
+        }
+        console.log( "SOLVED BY " + user );
+      }
+
+      function incorrectAnswer() {
+        switch( gameState ) {
+          case "Intro":
+            var incorrand = Math.random();
+            if( incorrand < 0.1 ) {
+              delayedText( "\nThat's wrong.", 0 );
+            }
+            else if( incorrand < 0.3 ) {
+              delayedText( "\nTry NOTHING.", 0 );
+            }
+            else if( incorrand < 0.4 ) {
+              delayedText( "\nNope.", 0 );
+            }
+            else if( incorrand < 0.6 ) {
+              delayedText( "\nWhat are you\ndoing?", 0 );
+            }
+            else if( incorrand < 0.8 ) {
+              delayedText( "\nI keep telling\nyou the answer.", 0 );
+            }
+            else {
+              delayedText( "\nIncorrect.", 0 );
+            }
+            break;
+          case "Intro2":
+            setGameState( "Pawzzle" );
+            pawswordTimer = pawswordTimeLimit;
+            break;
+          case "Intro3":
+            setGameState( "Pawzzle" );
+            pawswordTimer = pawswordTimeLimit;
+            break;
+          case "Pawzzle":
+            break;
+          case "Win":
+          case "Lose":
+            location.reload();
+            break;
+        }
+      }
+
+      function Update( timestamp, timeDiffInMs ) {
+        // Add Update Loop
+        // console.log( timestamp, timeDiffInMs );
+        // Update Display Text
+        if( displayTextBuffer && displayTextCooldown <= 0 ) {
+          displayTextCooldown = autoTextTime;
+          textDisplay.text += displayTextBuffer[ 0 ];
+          displayTextBuffer = displayTextBuffer.substring( 1, displayTextBuffer.length );
+          textLines = textDisplay.text.split( "\n" ).length;
+          if( textLines > 4 ) {
+            // Remove the first line and continue!
+            var lines = textDisplay.text.split( "\n" );
+            lines.shift();
+            textDisplay.text = lines.join( "\n" );
+            textLines--;
+          }
+          textPrompt.position.y = textDisplay.position.y + 25 * textLines;
+          Unicorn.PlaySound( "sfx-type", {
+            volume: 0.25 * volume
+          } );
+        }
+        if( displayTextCooldown > 0 ) {
+          displayTextCooldown -= timeDiffInMs;
+        }
+        if( pawswordTimer > 0 ) {
+          pawswordTimer -= timeDiffInMs;
+          if( pawswordTimer <= 0 ) {
+            // GAME OVER!
+            setGameState( "Lose" );
+          }
+          else {
+            var redlightsIndex = 14 - Math.floor( 15 * pawswordTimer / pawswordTimeLimit );
+            cityredlights[ redlightsIndex ].visible = true;
+            textCountdown.text = Math.floor( pawswordTimer / 1000 );
+          }
+        }
+        else {
+          textCountdown.text = "";
+        }
+      }
+
+      function OnChatMessage( user, message, flags, self, extra ) {
+        // Handle Chat Messages
+        if( checkWord( selectedWord, message.split( " " )[ 0 ] ) ) {
+          if( !isSolved && selectedWord === message.split( " " )[ 0 ] ) {
+            setSolved( user )
+          }
+        }
+      }
+
+      function CreateGame() {
+        Unicorn.Create( "unicorn-display", {
+          width: 640,
+          height: 360,
+          background: params.get( "overlay" ) ? "transparent" : 0x777777,
+          // background: "transparent",
+          init: Init,
+          update: Update,
+          channel: params.get( "channel" ),
+          // onCommand: OnChatCommand,
+          onChat: OnChatMessage,
+          // screenWalls: false, // Default: true
+          // wallBottom: true,
+          gravity: { x: 0, y: 0 },
+        });
+      }
+
+      var gameDifficulty = 1;
+      var gameLevel = 1;
+      var finalLevel = 10;
+      var isSolved = false;
+      var words = wordList.split( "," ).filter( x => !x.includes( "-" ) );
+      var selectedWord;
+      var typedword = "";
+      var revealedWord = "";
+      // console.log( selectedWord );
+
+      function newWord( difficulty ) {
+        switch( gameState ) {
+          case "Intro":
+            selectedWord = "nothing";
+            revealedWord = "";
+            answer.visible = false;
+            break;
+          case "Intro2":
+            selectedWord = "yes";
+            revealedWord = "";
+            answer.visible = false;
+            break;
+          case "Intro3":
+            selectedWord = "captain";
+            revealedWord = "";
+            answer.visible = false;
+            break;
+          case "Pawzzle":
+            var wordsByDifficulty = words.filter( x => x.length >= 4 && x.length <= ( difficulty + 5 ) );
+            selectedWord = wordsByDifficulty[ Math.floor( Math.random() * wordsByDifficulty.length ) ];
+            revealedWord = "_".repeat( selectedWord.length );
+            answer.visible = true;
+
+            /* set up the hints */
+            printHints();
+            break;
+          default:
+            revealedWord = "";
+            answer.visible = false;
+            break;
+        }
+        typedword = "";
+        isSolved = false;
+        answer.text = revealedWord.split( "" ).join( " " );
+      }
+
+      function checkWord( selectedWord, typedword ) {
+        var word1 = selectedWord.toLowerCase();
+        var word2 = typedword.toLowerCase();
+        for( var i = 0; i < word1.length && i < word2.length; i++ ) {
+          // console.log( i, word1[ i ], word1[ i ] );
+          if( word1[ i ] === word2[ i ] ) {
+            var parts = revealedWord.split( "" );
+            parts[ i ] = word1[ i ];
+            revealedWord = parts.join( "" );
+            // console.log( revealedWord );
+            answer.text = revealedWord.split( "" ).join( " " );
+          }
+        }
+        return revealedWord === selectedWord;
+      }
+
+
+      /* Patrik's code */
+      /* first make sure the touch button animation is working */
+      var animations = {
+        touchButton: {
+          interval: 150,
+          state: 0,
+          frames: 5
+        },
+        tablet: {
+          state: 0,
+          firstClicked: false
+        },
+        eyesClosing: {
+          interval: 50,
+          state: 0,
+          frames: 41
+        }
+      };
+      var touch_button_timer = setInterval(function(){
+        /* change the frame */
+        var btn_frames = touch_button_frames.children;
+        ///btn_frames.forEach();
+        Array.prototype.forEach.call(btn_frames, function(el, i){
+          el.style.display = (i == animations.touchButton.state)
+            ? "block" : "none";
+        });
+        //touch_button_frames.children[animations.touchButton]
+
+        /* increment the state and get new frame */
+        animations.touchButton.state++;
+        if ( animations.touchButton.state >= animations.touchButton.frames )
+          animations.touchButton.state = 0;
+      }, animations.touchButton.interval);
+
+
+      /* click on the tablet triggers two animations */
+      function tabletAnimation() {
+        /* hide the circles animation so it shows up only once */
+        if (!animations.tablet.firstClicked) {
+          animations.tablet.firstClicked = true;
+
+          touch_button_frames.style.opacity = 0;
+          setTimeout(function(){
+            touch_button_frames.style.display = "none";
+            clearInterval(touch_button_timer);
+          },1000);
+        }
+
+        /* begin the animation - using classes */
+        if (animations.tablet.state == 0) {
+          tablet_desk.className += " hidden";
+          setTimeout(function(){
+            tablet_overlay.className += " shown";
+          },1000);
+        } else {
+          tablet_overlay.className = "animated";
+          setTimeout(function(){
+            tablet_desk.className = "animated";
+          },1000);
+        }
+
+        /* update the state */
+        animations.tablet.state = !animations.tablet.state;
+      }
+
+      tablet_desk.addEventListener("click",tabletAnimation);
+      tablet_overlay.addEventListener("click",tabletAnimation);
+      touch_button_frames.addEventListener("click",tabletAnimation);
+
+      var hints = {
+        R: "is a pirate",
+        Y: "is the most curious",
+        B: "stings",
+        I: ["is you", "is not a team player", "is one in roman numerals"],
+        P: ["drank a lot of water", "is round, green and a vegetable"],
+        U: "is me",
+        Q: "is a line of waiting people",
+        Z: "is tired",
+        X: ["stands for kisses", "is 10 in roman numerals"],
+        U: "is smiling the most",
+        T: "is a hot beverage made from dried leaves",
+        A: ["looks like a house", "turns corn into an oak seed"],
+        C: ["doesn't need glasses", "is 100 in roman numerals", "contains the most water"],
+        V: "is 5 in roman numerals",
+        M: "is 1000 in roman numerals",
+        L: ["is 50 in roman numerals", "is the main character from Stranger Things"],
+        G: "is a string on a guitar/underwear",
+        W: "is a letter you'll find at the end of a rainbow",
+        H: "is a rung in a ladder"
+      };
+
+      function numToOrder(n) {
+        switch(n) {
+          case 1: return "1st";
+          case 2: return "2nd";
+          case 3: return "3rd";
+          default: return n + "th";
+        }
+      }
+
+      function printHints() {
+        var hintsText = "", counter = 0;
+        selectedWord.split("").forEach(function(letter) {
+          counter++;
+          if (hints.hasOwnProperty(letter.toUpperCase()))
+          {
+            var hint = hints[letter.toUpperCase()];
+            if (typeof hint === "string") {
+              hintsText += numToOrder(counter) + " one " + hint + "<br>";
+            } else {
+              hintsText += numToOrder(counter) + " one " + hint[Math.floor(Math.random()*hint.length)] + "<br>";
+            }
+          }
+        });
+        tablet_hints.innerHTML = "HINTS FOR LETTERS:<br>" + hintsText;
+      }
+
+      /* First opening eyes animation begins! */
+      function openEyes() {
+        window["unicorn-display"].style.opacity = 1;
+        tablet_desk.style.opacity = 1;
+        eyes_closing_frames.style.background = "#050e1e00";
+
+        var eyes_closing_timer = setInterval(function(){
+          /* change the frame */
+          var btn_frames = eyes_closing_frames.children;
+          Array.prototype.forEach.call(btn_frames, function(el, i){
+            el.style.display = (i == animations.eyesClosing.state)
+              ? "block" : "none";
+          });
+
+          /* increment the state and get new frame */
+          animations.eyesClosing.state++;
+
+          /* after the detective is woken up, start everything */
+          if ( animations.eyesClosing.state >= animations.eyesClosing.frames ) {
+            clearInterval(eyes_closing_timer);
+            eyes_closing_frames.style.opacity = 0;
+            setGameState( "Intro" );
+            setTimeout(function() {
+              eyes_closing_frames.style.display = "none";
+            },1000);
+          }
+        }, animations.eyesClosing.interval);
+      }
+    </script>
+  </body>
+</html>
