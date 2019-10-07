@@ -182,7 +182,7 @@
         for( var i = 1; i <= 48; i++ ) {
           Unicorn.Load( "explosion" + i, `web/assets/animations/explosion/explosion${i}.png` );
         }
-        for( var i = 1; i <= 51; i++ ) {
+        for( var i = 1; i <= 56; i++ ) {
           Unicorn.Load( "good_ending" + i, `web/assets/animations/good_ending/good_ending${i}.png` );
         }
 
@@ -201,7 +201,7 @@
           badEnding.push( Unicorn.AddOverlay( "explosion" + i, "explosion" + i, 0, 0 ) );
           badEnding[ i - 1 ].visible = false;
         }
-        for( var i = 1; i <= 51; i++ ) {
+        for( var i = 1; i <= 56; i++ ) {
           goodEnding.push( Unicorn.AddOverlay( "good_ending" + i, "good_ending" + i, 0, 0 ) );
           goodEnding[ i - 1 ].visible = false;
         }
