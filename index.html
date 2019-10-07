@@ -137,7 +137,7 @@
       }());
       /* eslint-enabled */
 
-      var owl1, owl2, pawlice, lightning;
+      var owl1, owl2, pawlice, pawlice2, lightning;
       var cityredlights = [];
       var redScreen;
       var badEnding = [], goodEnding = [];
@@ -194,7 +194,7 @@
           cityredlights.push( Unicorn.AddOverlay( "cityredlights" + i, "cityredlights" + i, 0, 0 ) );
           cityredlights[ i - 1 ].visible = false;
         }
-        Unicorn.AddOverlay( "pawlice_noshine", "pawlice_noshine", 498, 22 );
+        pawlice2 = Unicorn.AddOverlay( "pawlice_noshine", "pawlice_noshine", 498, 22 );
         pawlice = Unicorn.AddOverlay( "pawlice_shine", "pawlice_shine", 498, 22 );
         for( var i = 1; i <= 47; i++ ) {
           badEnding.push( Unicorn.AddOverlay( "explosion" + i, "explosion" + i, 0, 0 ) );
@@ -380,7 +380,7 @@
             clearDisplayText();
             delayedText( "\"Hey Paws,\nI've taken over\nyour computer.", 1000 );
             delayedText( "\nAnd the city.", 5000 );
-            delayedText( "\nDon't stop me.", 7000 );
+            delayedText( "\nDon't try to\nstop me.", 7000 );
             delayedText( "\n-Catastrophe\"", 9000 );
             setTimeout( () => {
               redScreen.visible = true;
@@ -407,6 +407,8 @@
             delayedText( "Just as I thought...", 1000 );
             delayedText( "\nYou can't beat\nthe Captain of\nCATASTROPHE!", 3000 );
             endingFrame = 0;
+            pawlice.visible = false;
+            pawlice2.visible = false;
             setTimeout( () => {
               setInterval( () => {
                 if( endingFrame < badEnding.length ) {
@@ -436,10 +438,18 @@
                   }
                   goodEnding[ endingFrame ].visible = true;
                   endingFrame++;
-                  // TODO: Add credits after the last frame
+                  // Last frame
                   if( endingFrame >= goodEnding.length ) {
                     owl1.visible = false;
                     owl2.visible = false;
+                    // Credits
+                    delayedText( "Detective,\nYou did it.", 1000 );
+                    delayedText( "\nYou have saved\nPawsville from evil.", 4000 );
+                    delayedText( "\n\nThank you for\nplaying our game for\nLudum Dare 45\n\"Start with Nothing\"", 8000 );
+                    delayedText( "\n\nMade by...", 16000 );
+                    delayedText( "\nInstafluff - Code", 18000 );
+                    delayedText( "\nMaayaInsane - Art", 20000 );
+                    delayedText( "\nPatrikHerman - Music & Code", 22000 );
                   }
                 }
               }, 100 );
